@@ -854,7 +854,6 @@ export default class PolygonAnnotatorV2 extends Component {
     }
   }
 
-
   savePolygon(category) {
     console.log('savePolygon ', category);
     const currentRect = this.state.currentRect;

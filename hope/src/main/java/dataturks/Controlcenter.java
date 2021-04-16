@@ -463,7 +463,7 @@ public class Controlcenter {
             }
 
 
-            if (DConstants.HIT_STATUS_DONE.equalsIgnoreCase(hitStatus))
+            if (DUtils.isHittedStatus(hitStatus))
             {
                 // update or create.
                 DHitsResultDAO dao = AppConfig.getInstance().getdHitsResultDAO();
@@ -493,7 +493,7 @@ public class Controlcenter {
                     LOG.error(e.toString() + " time taken value = " + reqObj.getReqMap().get("timeTakenToLabelInSec"));
                 }
                 AppConfig.getInstance().getdHitsResultDAO().saveOrUpdateInternal(result);
-                hitStatus = DConstants.HIT_STATUS_DONE;
+//                hitStatus = DConstants.HIT_STATUS_DONE;
             }
 
             //update the hit status.

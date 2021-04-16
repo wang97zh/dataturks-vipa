@@ -8,6 +8,8 @@ public class DConstants {
     public static long ONE_DAY_MILISEC = 24*60*60*1000;
 
     public final static String HIT_STATUS_DONE = "done";
+    public final static String HIT_STATUS_SELF_LEARNING = "sl";
+    public final static String HIT_STATUS_ACTIVE_LEARNING = "al";
     public final static String HIT_STATUS_NOT_DONE = "notDone";
     public final static String HIT_STATUS_SKIPPED = "skipped";
     public final static String HIT_STATUS_DELETED = "deleted";

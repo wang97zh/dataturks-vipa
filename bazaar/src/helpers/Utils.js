@@ -105,6 +105,10 @@ export const VIDEO_BOUNDING_BOX = "VIDEO_BOUNDING_BOX";
 
 export const HIT_STATE_SKIPPED = "skipped";
 export const HIT_STATE_DONE = "done";
+
+export const HIT_STATE_SL = "sl";  // 模型标注结果Self Learning(易分类的)
+export const HIT_STATE_AL = "al"; // 人工标注结果Active Learning(不易分类的)
+
 export const HIT_STATE_NOT_DONE = "notDone";
 export const HIT_STATE_DELETED = "deleted";
 export const HIT_STATE_PRE_TAGGED = "preTagged";
@@ -118,6 +122,8 @@ export const hitStateNameMap = {
   deleted: "Deleted",
   skipped: "Skipped",
   done: "Completed",
+  sl: "Self Learning",
+  al: "Active Learning",
   reQueued: "Re-queued for Annotation",
   notDone: "Not Done",
   preTagged: "Pre Tagged"

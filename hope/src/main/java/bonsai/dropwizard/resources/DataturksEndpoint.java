@@ -121,6 +121,32 @@ public class DataturksEndpoint {
 
 
     @POST
+    @Path("/loginByEncrypted")
+    public LoginResponse loginByEncrypted(@NotNull @HeaderParam("email") String email,
+                                          @NotNull @HeaderParam("encryptedPassword") String encryptedPassword) {
+
+        EventsLogger.logEvent("d_loginByEncrypted");
+
+        String regStr = "login: login user email=  " + email ;
+        LOG.info(regStr);
+        try {
+            DUsers user = AppConfig.getInstance().getdUsersDAO().findByEmailInternal(email);
+            if (user == null) {
+                throw new NotAuthorizedException("No such user found");
+            }
+            return loginInternalByEncrypted(user, encryptedPassword);
+        }
+        catch (Exception e) {
+            LOG.error("Error " + regStr  + e.toString());
+            EventsLogger.logErrorEvent("d_login");
+            EmailSender.sendEventMail("Dataturks errors: User login",  "\n Reg: = " + regStr +
+                    "\n" + "error = " + e.toString());
+            throw e;
+        }
+
+    }
+
+    @POST
     @Path("/createProject")
     public DummyResponse createProject(@NotNull @HeaderParam("token") String token,
                                 @NotNull @HeaderParam("uid") String id,
@@ -646,8 +672,9 @@ public class DataturksEndpoint {
             //get from cache.
             if (cacheEnabled) {
                 response = CacheWrapper.getOrgProjects(reqObj, orgId);
-                if (response != null)
+                if (response != null) {
                     return response;
+                }
             }
 
 
@@ -1077,6 +1104,23 @@ public class DataturksEndpoint {
             throw new NotAuthorizedException("No such user found");
         }
         if (user.getPassword().contentEquals(InternalLoginAuth.encryptedPassword(password))) {
+            String token = InternalLoginAuth.generateRandomUserToken();
+            InternalLoginAuth.addToken(user.getId(), token);
+            return new LoginResponse(user.getId(), token);
+        }
+        throw new NotAuthorizedException("User email/password doesn't match", Response.Status.BAD_REQUEST);
+    }
+
+    /**
+     * AIX登录
+     * @param:
+     * @return:
+     */
+    private LoginResponse loginInternalByEncrypted(DUsers user, String encryptedPassword) {
+        if (user == null) {
+            throw new NotAuthorizedException("No such user found");
+        }
+        if (user.getPassword().contentEquals(encryptedPassword)) {
             String token = InternalLoginAuth.generateRandomUserToken();
             InternalLoginAuth.addToken(user.getId(), token);
             return new LoginResponse(user.getId(), token);

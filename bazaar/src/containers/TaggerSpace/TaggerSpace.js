@@ -1,6 +1,6 @@
-import React, { Component, PropTypes } from "react";
-import { connect } from "react-redux";
-import { bindActionCreators } from "redux";
+import React, {Component, PropTypes} from "react";
+import {connect} from "react-redux";
+import {bindActionCreators} from "redux";
 import {
   tagData,
   nextRow,
@@ -42,7 +42,7 @@ import {
   addHitEvaluation,
   refreshUidToken
 } from "../../helpers/dthelper";
-import { push, goBack } from "react-router-redux";
+import {push, goBack} from "react-router-redux";
 import BoxAnnotator from "../../components/BoxAnnotator/BoxAnnotator";
 import PolygonAnnotator from "../../components/PolygonAnnotator/PolygonAnnotator";
 import PolygonAnnotatorV2 from "../../components/PolygonAnnotatorV2/PolygonAnnotator";
@@ -81,6 +81,8 @@ import {
   getClassificationResult,
   HIT_EVALUATION_CORRECT,
   HIT_EVALUATION_INCORRECT,
+  HIT_STATE_SL,
+  HIT_STATE_AL,
 } from "../../helpers/Utils";
 import PanZoomElement from "../../components/PinchZoomPan/PanZoomElement";
 import Fullscreen from "react-fullscreen-crossbrowser";
@@ -227,13 +229,13 @@ export default class TaggerSpace extends Component {
         if (this.props.currentHit.data) {
           words = this.props.currentHit.data.split(" ");
         }
-        for (let index = 0; index < resultJson.length; index ++) {
+        for (let index = 0; index < resultJson.length; index++) {
           const points = resultJson[index].points;
           const text = points[0].text;
           const entity = resultJson[index].label[0];
           labelMap[text] = entity;
         }
-        for (let index = 0; index < words.length; index ++) {
+        for (let index = 0; index < words.length; index++) {
           if (words[index] in labelMap) {
             clickedColor[index] = entityColorMap[labelMap[words[index]]];
             taggedEntity[index] = labelMap[words[index]];
@@ -552,7 +554,7 @@ export default class TaggerSpace extends Component {
         (!this.props.projectDetails ||
           (this.props.projectDetails.name !== this.props.params.projectName ||
             this.props.projectDetails.orgName !==
-              this.props.params.orgName))) ||
+            this.props.params.orgName))) ||
       !this.props.currentProject
     ) {
       this.props.setCurrentProject(
@@ -598,7 +600,7 @@ export default class TaggerSpace extends Component {
       this.loadProjectDetails(props.currentProject);
       this.props.getProjectDetails(props.currentProject, getUidToken());
     } else if (this.props.menuHidden !== props.menuHidden) {
-      this.setState({ menuHidden: props.menuHidden });
+      this.setState({menuHidden: props.menuHidden});
       this.loadProjectDetails(props.currentProject);
     }
     if (this.props.location !== props.location) {
@@ -635,7 +637,7 @@ export default class TaggerSpace extends Component {
     }
     if (!this.props.projectDetails && props.projectDetails) {
       this.props.getProjectDetails(props.currentProject, getUidToken());
-      this.setState({ projectDetails: props.projectDetails });
+      this.setState({projectDetails: props.projectDetails});
     }
     if (props.projectDetails && props.projectDetails.contributorDetails) {
       this.setState({
@@ -659,7 +661,7 @@ export default class TaggerSpace extends Component {
   componentWillUnmount() {
     console.log("unmounting Component");
     document.removeEventListener("keydown", this.handleKeyDown);
-    this.setState({ hits: undefined });
+    this.setState({hits: undefined});
   }
 
   getDefaultCount() {
@@ -703,7 +705,7 @@ export default class TaggerSpace extends Component {
       for (let index = 0; index < selectIds.length; index++) {
         currentClickState[selectIds[index]] = this.state.entityColorMap[
           data.name
-        ];
+          ];
         const currententities = this.state.taggedEntity;
         currententities[selectIds[index]] = data.name;
       }
@@ -727,21 +729,21 @@ export default class TaggerSpace extends Component {
     if (this.state.changesInSession > 0) {
       logEvent("buttons", "Labeled Data");
     }
-    this.setState({ hitsCompleted: false });
+    this.setState({hitsCompleted: false});
     if (this.state.newEntities && this.state.newEntities.length > 0) {
       logEvent("buttons", "New Entities");
       console.log("edit", this.state.newEntities);
-      const { taskRules } = this.props.projectDetails;
+      const {taskRules} = this.props.projectDetails;
       const rulesJson = JSON.parse(taskRules);
       rulesJson.tags = [...this.state.entities, ...this.state.newEntities].join(
         ","
       );
       editProject(
         this.props.currentProject,
-        { rules: JSON.stringify(rulesJson) },
+        {rules: JSON.stringify(rulesJson)},
         this.projectEditedCallback.bind(this)
       );
-      this.setState({ loading: true, newEntities: [] });
+      this.setState({loading: true, newEntities: []});
     }
 
     const resultString = this.getCurrentResult();
@@ -762,7 +764,7 @@ export default class TaggerSpace extends Component {
       });
       addHits(
         this.state.currentHit.id,
-        { result: resultString, timeTakenToLabelInSec: latency },
+        {result: resultString, timeTakenToLabelInSec: latency},
         this.props.currentProject,
         this.hitAddCallback
       );
@@ -786,14 +788,14 @@ export default class TaggerSpace extends Component {
   setClassification(entity, event) {
     event.preventDefault();
     console.log("setClassification", entity, event);
-    const { currentTags, changesInSession } = this.state;
+    const {currentTags, changesInSession} = this.state;
     console.log("setClassification", entity);
     if (currentTags.has(entity)) {
       currentTags.delete(entity);
     } else {
       currentTags.add(entity);
     }
-    this.setState({ currentTags, changesInSession: changesInSession + 1 });
+    this.setState({currentTags, changesInSession: changesInSession + 1});
   }
 
   getKeyboardShortcuts(shortcuts) {
@@ -876,8 +878,8 @@ export default class TaggerSpace extends Component {
               backgroundColor: "white"
             }}
           >
-            <label style={{ fontSize: "large" }}>{displayName}</label>
-            <br />
+            <label style={{fontSize: "large"}}>{displayName}</label>
+            <br/>
             {renderArrs}
           </Form>
         </div>
@@ -919,6 +921,28 @@ export default class TaggerSpace extends Component {
         logEvent("buttons", "Select Done");
         this.props.pushState(
           this.getUrl(HIT_STATE_DONE, this.state.contributorId, this.state.label, this.state.evaluationType)
+        );
+      }
+    });
+    options.push({
+      text: "SL HITs",
+      value: HIT_STATE_SL,
+      onClick: () => {
+        this.resetFilterState();
+        logEvent("buttons", "Select SL");
+        this.props.pushState(
+          this.getUrl(HIT_STATE_SL, this.state.contributorId, this.state.label, this.state.evaluationType)
+        );
+      }
+    });
+    options.push({
+      text: "AL HITs",
+      value: HIT_STATE_AL,
+      onClick: () => {
+        this.resetFilterState();
+        logEvent("buttons", "Select AL");
+        this.props.pushState(
+          this.getUrl(HIT_STATE_AL, this.state.contributorId, this.state.label, this.state.evaluationType)
         );
       }
     });
@@ -1110,8 +1134,9 @@ export default class TaggerSpace extends Component {
       const status = hit.status;
       return (
         <div>
-            {fileName && <Label title="File Name" size="mini">{fileName}</Label>}
-            {status && <Label title="HIT status" style={{ textTransform: 'capitalize' }} size="mini">{hitStateNameMap[status]}</Label>}
+          {fileName && <Label title="File Name" size="mini">{fileName}</Label>}
+          {status &&
+          <Label title="HIT status" style={{textTransform: 'capitalize'}} size="mini">{hitStateNameMap[status]}</Label>}
         </div>
       );
     }
@@ -1127,31 +1152,32 @@ export default class TaggerSpace extends Component {
       const userEmail = this.state.contributorDetailsMap[hr.userId] && this.state.contributorDetailsMap[hr.userId].email ? this.state.contributorDetailsMap[hr.userId].email : '';
       return (
         <div>
-        <Card color="teal" style={{ minHeight: '15em', maxHeight: '15em', overflowY: 'auto', overflowX: 'hidden' }}>
-          <Card.Content>
-            <Card.Header style={{ fontSize: "smaller" }} content={userEmail} />
-            {userName && (
-              <Card.Meta style={{ fontSize: "small" }} content={userName} />
-            )}
-            <Card.Description style={{ fontSize: "x-small" }}>
-              {fileName && <p style={{ fontSize: "x-small", width: 'min-content' }}>
-              File Name: <b> {fileName} </b> </p>}
+          <Card color="teal" style={{minHeight: '15em', maxHeight: '15em', overflowY: 'auto', overflowX: 'hidden'}}>
+            <Card.Content>
+              <Card.Header style={{fontSize: "smaller"}} content={userEmail}/>
+              {userName && (
+                <Card.Meta style={{fontSize: "small"}} content={userName}/>
+              )}
+              <Card.Description style={{fontSize: "x-small"}}>
+                {fileName && <p style={{fontSize: "x-small", width: 'min-content'}}>
+                  File Name: <b> {fileName} </b></p>}
 
-              <p style={{ fontSize: "x-small" }}>
-                {" "}
-                Last Updated{" "}
-                <b> {timeConverter(hit.hitResults[0].updatedTimestamp / 1000)} </b>
-              </p>
-            </Card.Description>
-          </Card.Content>
-          <Card.Content extra>
-            {status && <Label size="mini">{hitStateNameMap[status]}</Label>}
-            {evaluation && <Label style={{ textTransform: 'capitalize' }} color="green" size="mini">{evaluation}</Label>}
-          <Label size="mini" color="teal" attached="top right">
-            Annotator Info
-          </Label>
-          </Card.Content>
-        </Card>
+                <p style={{fontSize: "x-small"}}>
+                  {" "}
+                  Last Updated{" "}
+                  <b> {timeConverter(hit.hitResults[0].updatedTimestamp / 1000)} </b>
+                </p>
+              </Card.Description>
+            </Card.Content>
+            <Card.Content extra>
+              {status && <Label size="mini">{hitStateNameMap[status]}</Label>}
+              {evaluation &&
+              <Label style={{textTransform: 'capitalize'}} color="green" size="mini">{evaluation}</Label>}
+              <Label size="mini" color="teal" attached="top right">
+                Annotator Info
+              </Label>
+            </Card.Content>
+          </Card>
         </div>
       );
     }
@@ -1259,10 +1285,10 @@ export default class TaggerSpace extends Component {
       if (
         this.state.projectDetails.task_type === IMAGE_POLYGON_BOUNDING_BOX ||
         this.state.projectDetails.task_type ===
-          IMAGE_POLYGON_BOUNDING_BOX_V2 ||
+        IMAGE_POLYGON_BOUNDING_BOX_V2 ||
         this.state.projectDetails.task_type === IMAGE_BOUNDING_BOX
       ) {
-        if ( boundingBoxMap.imageWidth && boundingBoxMap.imageHeight && (
+        if (boundingBoxMap.imageWidth && boundingBoxMap.imageHeight && (
           boundingBoxMap.imageWidth === 0 ||
           boundingBoxMap.imageHeight === 0)
         ) {
@@ -1272,7 +1298,7 @@ export default class TaggerSpace extends Component {
             }
             window.Raven.captureException(
               "Error while annotating image, hit is :  " +
-                JSON.stringify(this.state.currentHit)
+              JSON.stringify(this.state.currentHit)
             );
           }
         }
@@ -1319,7 +1345,7 @@ export default class TaggerSpace extends Component {
       });
       this.loadProjectDetails(this.props.currentProject);
     } else {
-      this.setState({ loading: false });
+      this.setState({loading: false});
       captureException(err);
     }
   }
@@ -1330,9 +1356,9 @@ export default class TaggerSpace extends Component {
       const {currentHit, hits, currentIndex} = this.state;
       currentHit.evaluation = value;
       hits[currentIndex].evaluation = value;
-      this.setState({ loading: false, currentHit, hits });
+      this.setState({loading: false, currentHit, hits});
     } else {
-      this.setState({ loading: false });
+      this.setState({loading: false});
       captureException(err);
     }
   }
@@ -1340,28 +1366,31 @@ export default class TaggerSpace extends Component {
   moveToDoneCallback(err, response) {
     console.log('moveToDoneCallback', err, response);
     if (!err) {
-      this.setState({ loading: false });
+      this.setState({loading: false});
       if (this.state.newEntities && this.state.newEntities.length > 0) {
         logEvent("buttons", "New Entities");
         console.log("edit", this.state.newEntities);
-        const { taskRules } = this.props.projectDetails;
+        const {taskRules} = this.props.projectDetails;
         const rulesJson = JSON.parse(taskRules);
         rulesJson.tags = [...this.state.entities, ...this.state.newEntities].join(
           ","
         );
         editProject(
           this.props.currentProject,
-          { rules: JSON.stringify(rulesJson) },
+          {rules: JSON.stringify(rulesJson)},
           this.projectEditedCallback.bind(this)
         );
-        this.setState({ loading: true, newEntities: [] });
+        this.setState({loading: true, newEntities: []});
       }
       this.props.getProjectDetails(this.props.currentProject, getUidToken());
       this.hitAddCallback(undefined, "Hit moved to done", this.state.action ? this.state.action : 'moveToDone');
     } else {
-      this.setState({ loading: false });
+      this.setState({loading: false});
       if (response && response.body && response.body.code && response.body.code === 401) {
-        refreshUidToken(() => { console.log('token refreshed'); this.setState({ loading: false })});
+        refreshUidToken(() => {
+          console.log('token refreshed');
+          this.setState({loading: false})
+        });
       } else {
         captureException(err);
       }
@@ -1372,7 +1401,7 @@ export default class TaggerSpace extends Component {
     console.log('move to done', action);
     logEvent("buttons", 'Done');
     logEvent("Mark As", 'Done');
-    const { currentHit, changesInSession } = this.state;
+    const {currentHit, changesInSession} = this.state;
     console.log('saveElement', currentHit.id);
     let result = '';
     if (changesInSession > 0) {
@@ -1390,7 +1419,7 @@ export default class TaggerSpace extends Component {
     }
     this.state.action = action ? action : 'moveToDone';
     this.state.changesInSession = 0;
-    this.setState({ loading: true, action: action ? action : 'moveToDone' });
+    this.setState({loading: true, action: action ? action : 'moveToDone'});
     updateHitStatus(currentHit.id, this.props.currentProject, HIT_STATE_DONE, result, this.moveToDoneCallback.bind(this));
   }
 
@@ -1398,7 +1427,7 @@ export default class TaggerSpace extends Component {
     console.log('move to done');
     logEvent("buttons", 'Skip');
     logEvent("Mark As", 'Skip');
-    const { currentHit, changesInSession } = this.state;
+    const {currentHit, changesInSession} = this.state;
     console.log('saveElement', currentHit.id);
     let result = '';
     if (changesInSession > 0) {
@@ -1412,12 +1441,12 @@ export default class TaggerSpace extends Component {
         return false;
       }
     }
-    this.setState({ loading: true, action: 'moveToDone' });
+    this.setState({loading: true, action: 'moveToDone'});
     updateHitStatus(currentHit.id, this.props.currentProject, HIT_STATE_SKIPPED, result, this.moveToDoneCallback.bind(this));
   }
 
   saveElement() {
-    const { currentHit, changesInSession } = this.state;
+    const {currentHit, changesInSession} = this.state;
     console.log('saveElement', currentHit.id);
     let result = '';
     if (changesInSession > 0) {
@@ -1434,7 +1463,7 @@ export default class TaggerSpace extends Component {
         return false;
       }
     }
-    this.setState({ loding: true });
+    this.setState({loding: true});
     updateHitStatus(currentHit.id, this.props.currentProject, currentHit.status, result, this.saveElementCallback.bind(this));
   }
 
@@ -1457,7 +1486,7 @@ export default class TaggerSpace extends Component {
     if (classificationResponseObj.length > 0) {
       classificationResponse[name] = classificationResponseObj;
     }
-    this.setState({ classificationResponse, changesInSession: this.state.changesInSession + 1 });
+    this.setState({classificationResponse, changesInSession: this.state.changesInSession + 1});
   }
 
   resizeWindow(event) {
@@ -1477,13 +1506,13 @@ export default class TaggerSpace extends Component {
       if (data) {
         words = data.split(" ");
       }
-      for (let index = 0; index < resultJson.length; index ++) {
+      for (let index = 0; index < resultJson.length; index++) {
         const points = resultJson[index].points;
         const text = points[0].text;
         const entity = resultJson[index].label[0];
         labelMap[text] = entity;
       }
-      for (let index = 0; index < words.length; index ++) {
+      for (let index = 0; index < words.length; index++) {
         if (words[index] in labelMap) {
           clickedColor[index] = this.state.entityColorMap[labelMap[words[index]]];
           taggedEntity[index] = labelMap[words[index]];
@@ -1526,7 +1555,7 @@ export default class TaggerSpace extends Component {
     console.log(" project details fetched ", error, response);
     if (!error) {
       if (response.body.hits.length < this.state.currentCount) {
-        this.setState({ hitScrollCompleted: true });
+        this.setState({hitScrollCompleted: true});
       }
       let projectDetails = this.props.projectDetails;
       if (response.body.projectDetails) {
@@ -1561,238 +1590,238 @@ export default class TaggerSpace extends Component {
           action: ""
         });
         if ((!this.state.type || this.state.type === "notDone")) {
-          this.setState({ hitsCompleted: true });
+          this.setState({hitsCompleted: true});
         }
       } else {
-          if (projectDetails.task_type === POS_TAGGING) {
-            if (response.body.hits.length > 0) {
-              this.addHitinState(
-                currentHit.hitResults
-                  ? currentHit.hitResults[0].result
-                  : currentHit.data, currentHit.data
-              );
-              this.setState({
-                startTime: new Date().getTime(),
-                rules,
-                shortcuts,
-                entityColorMap,
-                currentIndex,
-                hits: currentHits,
-                currentHit,
-                entities,
-                projectDetails,
-                loading: false,
-                action: ""
-              });
+        if (projectDetails.task_type === POS_TAGGING) {
+          if (response.body.hits.length > 0) {
+            this.addHitinState(
+              currentHit.hitResults
+                ? currentHit.hitResults[0].result
+                : currentHit.data, currentHit.data
+            );
+            this.setState({
+              startTime: new Date().getTime(),
+              rules,
+              shortcuts,
+              entityColorMap,
+              currentIndex,
+              hits: currentHits,
+              currentHit,
+              entities,
+              projectDetails,
+              loading: false,
+              action: ""
+            });
+          }
+        } else if (
+          projectDetails.task_type === TEXT_SUMMARIZATION ||
+          projectDetails.task_type === TEXT_MODERATION
+        ) {
+          if (response.body.hits.length > 0) {
+            let textSummary = "";
+            if (currentHit.hitResults !== null) {
+              textSummary = currentHit.hitResults[0].result;
             }
-          } else if (
-            projectDetails.task_type === TEXT_SUMMARIZATION ||
-            projectDetails.task_type === TEXT_MODERATION
-          ) {
-            if (response.body.hits.length > 0) {
-              let textSummary = "";
-              if (currentHit.hitResults !== null) {
-                textSummary = currentHit.hitResults[0].result;
+            this.setState({
+              rules,
+              shortcuts,
+              currentIndex,
+              hits: currentHits,
+              currentHit,
+              textSummary,
+              projectDetails,
+              loading: false,
+              action: ""
+            });
+          }
+        } else if (projectDetails.task_type === TEXT_CLASSIFICATION) {
+          if (response.body.hits.length > 0) {
+            let currentTags = new Set();
+            let currentNote = "";
+            if (currentHit.hitResults !== null) {
+              const result = currentHit.hitResults[0].result;
+              try {
+                const resultJson = JSON.parse(result);
+                currentTags = new Set(resultJson.labels);
+                currentNote = resultJson.note;
+              } catch (exception) {
+                // statements
+                console.log("exception", exception);
+                currentTags = new Set(result.split("____"));
               }
-              this.setState({
-                rules,
-                shortcuts,
-                currentIndex,
-                hits: currentHits,
-                currentHit,
-                textSummary,
-                projectDetails,
-                loading: false,
-                action: ""
-              });
             }
-          } else if (projectDetails.task_type === TEXT_CLASSIFICATION) {
-            if (response.body.hits.length > 0) {
-              let currentTags = new Set();
-              let currentNote = "";
-              if (currentHit.hitResults !== null) {
-                const result = currentHit.hitResults[0].result;
-                try {
-                  const resultJson = JSON.parse(result);
-                  currentTags = new Set(resultJson.labels);
-                  currentNote = resultJson.note;
-                } catch (exception) {
-                  // statements
-                  console.log("exception", exception);
-                  currentTags = new Set(result.split("____"));
-                }
+            this.setState({
+              currentTags,
+              shortcuts,
+              currentNote,
+              rules,
+              entities,
+              entityColorMap,
+              currentIndex,
+              hits: currentHits,
+              currentHit,
+              projectDetails,
+              loading: false,
+              action: ""
+            });
+          }
+        } else if (
+          projectDetails.task_type === IMAGE_CLASSIFICATION ||
+          projectDetails.task_type === VIDEO_CLASSIFICATION
+        ) {
+          if (response.body.hits.length > 0) {
+            let currentTags = new Set();
+            let currentNote = "";
+            if (
+              currentHit.hitResults !== null &&
+              currentHit.hitResults[0].result.length > 0
+            ) {
+              const result = currentHit.hitResults[0].result;
+              try {
+                const resultJson = JSON.parse(result);
+                currentTags = new Set(resultJson.labels);
+                currentNote = resultJson.note;
+              } catch (exception) {
+                // statements
+                console.log("exception", exception);
+                currentTags = new Set(result.split("____"));
               }
-              this.setState({
-                currentTags,
-                shortcuts,
-                currentNote,
-                rules,
-                entities,
-                entityColorMap,
-                currentIndex,
-                hits: currentHits,
-                currentHit,
-                projectDetails,
-                loading: false,
-                action: ""
-              });
             }
-          } else if (
-            projectDetails.task_type === IMAGE_CLASSIFICATION ||
-            projectDetails.task_type === VIDEO_CLASSIFICATION
-          ) {
-            if (response.body.hits.length > 0) {
-              let currentTags = new Set();
-              let currentNote = "";
-              if (
-                currentHit.hitResults !== null &&
-                currentHit.hitResults[0].result.length > 0
-              ) {
-                const result = currentHit.hitResults[0].result;
-                try {
-                  const resultJson = JSON.parse(result);
-                  currentTags = new Set(resultJson.labels);
-                  currentNote = resultJson.note;
-                } catch (exception) {
-                  // statements
-                  console.log("exception", exception);
-                  currentTags = new Set(result.split("____"));
-                }
-              }
-              const image1 = new Image(); // eslint-disable-line no-undef
-              image1.src = currentHit.data;
-              setTimeout(this.loadImages.bind(this), 10000);
-              this.setState({
-                currentTags,
-                shortcuts,
-                rules,
-                currentNote,
-                entities,
-                entityColorMap,
-                currentIndex,
-                hits: currentHits,
-                currentHit,
-                projectDetails,
-                loading: false,
-                action: ""
-              });
+            const image1 = new Image(); // eslint-disable-line no-undef
+            image1.src = currentHit.data;
+            setTimeout(this.loadImages.bind(this), 10000);
+            this.setState({
+              currentTags,
+              shortcuts,
+              rules,
+              currentNote,
+              entities,
+              entityColorMap,
+              currentIndex,
+              hits: currentHits,
+              currentHit,
+              projectDetails,
+              loading: false,
+              action: ""
+            });
+          }
+        } else if (
+          projectDetails.task_type === IMAGE_BOUNDING_BOX ||
+          projectDetails.task_type === IMAGE_POLYGON_BOUNDING_BOX ||
+          projectDetails.task_type === IMAGE_POLYGON_BOUNDING_BOX_V2 ||
+          projectDetails.task_type === VIDEO_BOUNDING_BOX
+        ) {
+          let hideLabels = false;
+          let autoClose = true;
+          let notes = false;
+          let defaultShape = "polygon";
+          let keepEntitySelected = false;
+          if ("notes" in rules) {
+            notes = rules.notes;
+          }
+          if ("autoClose" in rules) {
+            autoClose = rules.autoClose;
+          }
+          if ("hideLabels" in rules) {
+            hideLabels = rules.hideLabels;
+          }
+          if ("defaultShape" in rules) {
+            defaultShape = rules.defaultShape;
+          }
+          if ("keepEntitySelected" in rules) {
+            keepEntitySelected = rules.keepEntitySelected;
+          }
+          if (response.body.hits.length > 0) {
+            const image1 = new Image(); // eslint-disable-line no-undef
+            image1.src = currentHit.data;
+            setTimeout(this.loadImages.bind(this), 10000);
+            let boundingBoxMap = [];
+            if (
+              currentHit.hitResults &&
+              currentHit.hitResults[0].result.length > 0
+            ) {
+              boundingBoxMap = JSON.parse(currentHit.hitResults[0].result);
             }
-          } else if (
-            projectDetails.task_type === IMAGE_BOUNDING_BOX ||
-            projectDetails.task_type === IMAGE_POLYGON_BOUNDING_BOX ||
-            projectDetails.task_type === IMAGE_POLYGON_BOUNDING_BOX_V2 ||
-            projectDetails.task_type === VIDEO_BOUNDING_BOX
-          ) {
-            let hideLabels = false;
-            let autoClose = true;
-            let notes = false;
-            let defaultShape = "polygon";
-            let keepEntitySelected = false;
-            if ("notes" in rules) {
-              notes = rules.notes;
-            }
-            if ("autoClose" in rules) {
-              autoClose = rules.autoClose;
-            }
-            if ("hideLabels" in rules) {
-              hideLabels = rules.hideLabels;
-            }
-            if ("defaultShape" in rules) {
-              defaultShape = rules.defaultShape;
-            }
-            if ("keepEntitySelected" in rules) {
-              keepEntitySelected = rules.keepEntitySelected;
-            }
-            if (response.body.hits.length > 0) {
-              const image1 = new Image(); // eslint-disable-line no-undef
-              image1.src = currentHit.data;
-              setTimeout(this.loadImages.bind(this), 10000);
-              let boundingBoxMap = [];
+            this.setState({
+              boundingBoxMap,
+              defaultShape,
+              autoClose,
+              notes,
+              hideLabels,
+              entityJson,
+              newEntities: [],
+              shortcuts,
+              rules,
+              entities,
+              entityColorMap,
+              keepEntitySelected,
+              currentIndex,
+              hits: currentHits,
+              currentHit,
+              projectDetails,
+              loading: false,
+              action: ""
+            });
+          }
+        } else if (
+          projectDetails.task_type === DOCUMENT_ANNOTATION ||
+          projectDetails.task_type === POS_TAGGING_GENERIC
+        ) {
+          let autoClose = true;
+          let classification = undefined;
+          let classificationResponse = [];
+          if ("autoClose" in rules) {
+            autoClose = rules.autoClose;
+          }
+          if ("classification" in rules) {
+            classification = rules.classification;
+          }
+          if (response.body.hits.length > 0) {
+            let boundingBoxMap = {};
+            if (classification) {
               if (
                 currentHit.hitResults &&
                 currentHit.hitResults[0].result.length > 0
               ) {
+                let resultObject = JSON.parse(currentHit.hitResults[0].result);
+                if ("annotationResult" in resultObject) {
+                  boundingBoxMap = resultObject.annotationResult;
+                  classificationResponse = getClassificationResponse(
+                    resultObject.classificationResult
+                  );
+                } else {
+                  boundingBoxMap = resultObject;
+                }
+              }
+            } else {
+              if (currentHit.hitResults && currentHit.hitResults[0].result.length > 0) {
                 boundingBoxMap = JSON.parse(currentHit.hitResults[0].result);
               }
-              this.setState({
-                boundingBoxMap,
-                defaultShape,
-                autoClose,
-                notes,
-                hideLabels,
-                entityJson,
-                newEntities: [],
-                shortcuts,
-                rules,
-                entities,
-                entityColorMap,
-                keepEntitySelected,
-                currentIndex,
-                hits: currentHits,
-                currentHit,
-                projectDetails,
-                loading: false,
-                action: ""
-              });
             }
-          } else if (
-            projectDetails.task_type === DOCUMENT_ANNOTATION ||
-            projectDetails.task_type === POS_TAGGING_GENERIC
-          ) {
-            let autoClose = true;
-            let classification = undefined;
-            let classificationResponse = [];
-            if ("autoClose" in rules) {
-              autoClose = rules.autoClose;
-            }
-            if ("classification" in rules) {
-              classification = rules.classification;
-            }
-            if (response.body.hits.length > 0) {
-              let boundingBoxMap = {};
-              if (classification) {
-                if (
-                  currentHit.hitResults &&
-                  currentHit.hitResults[0].result.length > 0
-                ) {
-                  let resultObject = JSON.parse(currentHit.hitResults[0].result);
-                  if ("annotationResult" in resultObject) {
-                    boundingBoxMap = resultObject.annotationResult;
-                    classificationResponse = getClassificationResponse(
-                      resultObject.classificationResult
-                    );
-                  } else {
-                    boundingBoxMap = resultObject;
-                  }
-                }
-              } else {
-                if (currentHit.hitResults && currentHit.hitResults[0].result.length > 0) {
-                  boundingBoxMap = JSON.parse(currentHit.hitResults[0].result);
-                }
-              }
-              // let currentTags = new Set();
-              // if (currentHit.hitResults !== null) {
-              //   currentTags = new Set(currentHit.hitResults[0].result.split('____'));
-              // }
-              this.setState({
-                boundingBoxMap,
-                classification,
-                classificationResponse,
-                shortcuts,
-                autoClose,
-                rules,
-                entities,
-                newEntities: [],
-                entityColorMap,
-                currentIndex,
-                hits: currentHits,
-                currentHit,
-                projectDetails,
-                loading: false,
-                action: ""
-              });
-            }
+            // let currentTags = new Set();
+            // if (currentHit.hitResults !== null) {
+            //   currentTags = new Set(currentHit.hitResults[0].result.split('____'));
+            // }
+            this.setState({
+              boundingBoxMap,
+              classification,
+              classificationResponse,
+              shortcuts,
+              autoClose,
+              rules,
+              entities,
+              newEntities: [],
+              entityColorMap,
+              currentIndex,
+              hits: currentHits,
+              currentHit,
+              projectDetails,
+              loading: false,
+              action: ""
+            });
           }
+        }
       }
     } else {
       alert("Error in fetching project details, please try again");
@@ -1802,7 +1831,7 @@ export default class TaggerSpace extends Component {
       } else {
         logEvent("project_detail_fetch_error", "Error");
       }
-      this.setState({ loading: false });
+      this.setState({loading: false});
     }
   }
 
@@ -1822,7 +1851,7 @@ export default class TaggerSpace extends Component {
       console.log("undefined");
       startP = this.state.currentStart;
     }
-    this.setState({ loading: true });
+    this.setState({loading: true});
     fetchHits(
       pid ? pid : this.props.currentProject,
       startP,
@@ -1918,7 +1947,7 @@ export default class TaggerSpace extends Component {
       // chits.splice(0, 1);
       // console.log(' Hit Added ', chits);
       let currentHit = this.state.currentHit;
-      if (nextIndex > -1 &&  nextIndex < chits.length) {
+      if (nextIndex > -1 && nextIndex < chits.length) {
         currentHit = chits[nextIndex];
         let currentTags = new Set();
         let currentNote = "";
@@ -1960,9 +1989,9 @@ export default class TaggerSpace extends Component {
           } else if (
             this.state.projectDetails.task_type === IMAGE_BOUNDING_BOX ||
             this.state.projectDetails.task_type ===
-              IMAGE_POLYGON_BOUNDING_BOX ||
+            IMAGE_POLYGON_BOUNDING_BOX ||
             this.state.projectDetails.task_type ===
-              IMAGE_POLYGON_BOUNDING_BOX_V2 ||
+            IMAGE_POLYGON_BOUNDING_BOX_V2 ||
             this.state.projectDetails.task_type === VIDEO_BOUNDING_BOX ||
             this.state.projectDetails.task_type === DOCUMENT_ANNOTATION ||
             this.state.projectDetails.task_type === POS_TAGGING_GENERIC
@@ -2005,10 +2034,10 @@ export default class TaggerSpace extends Component {
           } else if (
             this.state.projectDetails.task_type === IMAGE_BOUNDING_BOX ||
             this.state.projectDetails.task_type ===
-              IMAGE_POLYGON_BOUNDING_BOX ||
+            IMAGE_POLYGON_BOUNDING_BOX ||
             this.state.projectDetails.task_type === VIDEO_BOUNDING_BOX ||
             this.state.projectDetails.task_type ===
-              IMAGE_POLYGON_BOUNDING_BOX_V2 ||
+            IMAGE_POLYGON_BOUNDING_BOX_V2 ||
             this.state.projectDetails.task_type === DOCUMENT_ANNOTATION ||
             this.state.projectDetails.task_type === POS_TAGGING_GENERIC
           ) {
@@ -2046,8 +2075,8 @@ export default class TaggerSpace extends Component {
           loading: false
         });
       } else {
-        const { currentStart, currentCount } = this.state;
-        this.setState({ currentStart: currentStart + currentCount });
+        const {currentStart, currentCount} = this.state;
+        this.setState({currentStart: currentStart + currentCount});
         if (!this.state.type || this.state.type === "notDone") {
           this.loadProjectDetails(this.props.currentProject, 0, currentCount);
         } else {
@@ -2065,10 +2094,13 @@ export default class TaggerSpace extends Component {
       }
     } else {
       if (response && response.body && response.body.code && response.body.code === 401) {
-        refreshUidToken(() => { console.log('token refreshed'); this.setState({ loading: false })});
+        refreshUidToken(() => {
+          console.log('token refreshed');
+          this.setState({loading: false})
+        });
       } else {
         alert(error.message);
-        this.setState({ loading: false, error: error.message });
+        this.setState({loading: false, error: error.message});
       }
     }
   }
@@ -2090,7 +2122,7 @@ export default class TaggerSpace extends Component {
     // const latency = ((new Date().getTime() - this.state.startTime) / 1000).toPrecision(3);
     logEvent("buttons", "Skip hit");
     logEvent("Mark As", 'Skipped');
-    this.setState({ loading: true, action: "next", changesInSession: 0 });
+    this.setState({loading: true, action: "next", changesInSession: 0});
     skipHits(
       this.state.currentHit.id,
       this.props.currentProject,
@@ -2101,7 +2133,7 @@ export default class TaggerSpace extends Component {
 
   projectEditedCallback(response, error) {
     console.log("response error", response, error);
-    this.setState({ loading: false });
+    this.setState({loading: false});
   }
 
   saveTagAndNextRow(action, data) {
@@ -2117,17 +2149,17 @@ export default class TaggerSpace extends Component {
     if (this.state.newEntities && this.state.newEntities.length > 0) {
       logEvent("buttons", "New Entities");
       console.log("edit", this.state.newEntities);
-      const { taskRules } = this.props.projectDetails;
+      const {taskRules} = this.props.projectDetails;
       const rulesJson = JSON.parse(taskRules);
       rulesJson.tags = [...this.state.entities, ...this.state.newEntities].join(
         ","
       );
       editProject(
         this.props.currentProject,
-        { rules: JSON.stringify(rulesJson) },
+        {rules: JSON.stringify(rulesJson)},
         this.projectEditedCallback.bind(this)
       );
-      this.setState({ loading: true, newEntities: [] });
+      this.setState({loading: true, newEntities: []});
     }
     const resultString = this.getCurrentResult();
     this.state.currentHit.result = resultString;
@@ -2141,19 +2173,19 @@ export default class TaggerSpace extends Component {
       this.setState({loading: true, action: 'next', changesInSession: 0});
       addHits(
         this.state.currentHit.id,
-        { result: resultString, timeTakenToLabelInSec: latency },
+        {result: resultString, timeTakenToLabelInSec: latency},
         this.props.currentProject,
         this.hitAddCallback
       );
     } else {
-      this.setState({ changesInSession: 0, loading: true, action: 'next' });
+      this.setState({changesInSession: 0, loading: true, action: 'next'});
       this.hitAddCallback(undefined, "No Tag Found, moving to next", 'next');
     }
     return false;
   }
 
   removeTag(index) {
-    const { clickedColor, taggedEntity, changesInSession } = this.state;
+    const {clickedColor, taggedEntity, changesInSession} = this.state;
     clickedColor[index] = "";
     taggedEntity[index] = "__";
     this.setState({
@@ -2188,7 +2220,7 @@ export default class TaggerSpace extends Component {
       // This is just personal preference.
       // I prefer to not show the the whole text area selected.
       // event.target.focus();
-      this.setState({ copySuccess: "Copied!" });
+      this.setState({copySuccess: "Copied!"});
     }
   };
 
@@ -2252,7 +2284,7 @@ export default class TaggerSpace extends Component {
             {splits[index]}
           </span>
           {this.state.taggedEntity[index] !== "__" && (
-            <p style={{ display: "inline", fontSize: "1rem" }}>
+            <p style={{display: "inline", fontSize: "1rem"}}>
               &nbsp; &nbsp; &nbsp; {this.state.taggedEntity[index]}
               <Icon
                 name="delete"
@@ -2273,7 +2305,7 @@ export default class TaggerSpace extends Component {
           size="small"
           onClick={this.copyToClipboard}
         >
-          <Icon name="copy" color="teal" />
+          <Icon name="copy" color="teal"/>
           Copy
         </Button>
       </div>
@@ -2281,14 +2313,14 @@ export default class TaggerSpace extends Component {
   }
 
   removeCurrentTag(ent) {
-    const { currentTags, changesInSession } = this.state;
+    const {currentTags, changesInSession} = this.state;
     currentTags.delete(ent);
-    this.setState({ currentTags, changesInSession: changesInSession + 1 });
+    this.setState({currentTags, changesInSession: changesInSession + 1});
   }
 
   showCurrentTags() {
     console.log(" show current tags ", this.state);
-    const { currentTags, entityColorMap } = this.state;
+    const {currentTags, entityColorMap} = this.state;
     const renderArrs = [];
     for (const ent of currentTags) {
       console.log("show current tag", ent, entityColorMap[ent]);
@@ -2303,7 +2335,7 @@ export default class TaggerSpace extends Component {
         >
           {" "}
           {ent}
-          <Icon name="delete" onClick={this.removeCurrentTag.bind(this, ent)} />
+          <Icon name="delete" onClick={this.removeCurrentTag.bind(this, ent)}/>
         </Label>
       );
     }
@@ -2312,21 +2344,21 @@ export default class TaggerSpace extends Component {
 
   showText() {
     // const currentHit = this.state.currentHit;
-    const { data } = this.state.currentHit;
+    const {data} = this.state.currentHit;
     console.log("show text", this.state);
     return (
       <div className={styles.tagArea}>
         <p className={styles.textStyle}>{data}</p>
         {this.state.projectDetails.task_type === TEXT_CLASSIFICATION &&
-          this.state.currentTags &&
-          this.state.currentTags.size > 0 &&
-          this.showCurrentTags()}
+        this.state.currentTags &&
+        this.state.currentTags.size > 0 &&
+        this.showCurrentTags()}
         <Button
           className={styles.copyButton}
           size="small"
           onClick={this.copyToClipboard}
         >
-          <Icon name="copy" color="teal" />
+          <Icon name="copy" color="teal"/>
           Copy
         </Button>
       </div>
@@ -2335,21 +2367,21 @@ export default class TaggerSpace extends Component {
 
   showTextAnnotation() {
     // const currentHit = this.state.currentHit;
-    const { data } = this.state.currentHit;
+    const {data} = this.state.currentHit;
     console.log("show text", this.state);
     return (
       <div className={styles.tagArea}>
         <p className={styles.textStyle}>{data}</p>
         {this.state.projectDetails.task_type === TEXT_CLASSIFICATION &&
-          this.state.currentTags &&
-          this.state.currentTags.size > 0 &&
-          this.showCurrentTags()}
+        this.state.currentTags &&
+        this.state.currentTags.size > 0 &&
+        this.showCurrentTags()}
         <Button
           className={styles.copyButton}
           size="small"
           onClick={this.copyToClipboard}
         >
-          <Icon name="copy" color="teal" />
+          <Icon name="copy" color="teal"/>
           Copy
         </Button>
       </div>
@@ -2360,7 +2392,7 @@ export default class TaggerSpace extends Component {
     const value = element.target.value;
     console.log(" field value ", field, value);
     const changesInSession = this.state.changesInSession + 1;
-    this.setState({ changesInSession, textSummary: value });
+    this.setState({changesInSession, textSummary: value});
   }
 
   showWriteText(type) {
@@ -2397,14 +2429,14 @@ export default class TaggerSpace extends Component {
       const color =
         ENTITY_COLORS[
           index > ENTITY_COLORS.length ? index - ENTITY_COLORS.length : index
-        ];
+          ];
       let combo = "";
       if (entity in shortcuts) {
         combo = convertKeyToString(shortcuts[entity]);
         if (this.state.projectDetails.task_type === POS_TAGGING) {
           Mousetrap.bind(
             combo,
-            this.setTagClick.bind(this, null, { name: entity })
+            this.setTagClick.bind(this, null, {name: entity})
           );
         } else {
           if (this.state.currentIndex >= 0) {
@@ -2425,7 +2457,7 @@ export default class TaggerSpace extends Component {
           onClick={this.setTagClick}
           key={color}
         >
-          {entity} <br /> {combo}
+          {entity} <br/> {combo}
         </Label>
       );
     }
@@ -2435,7 +2467,7 @@ export default class TaggerSpace extends Component {
 
   showImages() {
     console.log("images are ", this.state);
-    const { data } = this.state.currentHit;
+    const {data} = this.state.currentHit;
     console.log("show text", this.state);
     let windowHeight = (window.innerHeight * 70) / 100;
     let windowWidth = (window.innerWidth * 65) / 100;
@@ -2448,10 +2480,10 @@ export default class TaggerSpace extends Component {
     }
     if (!checkVideoURL(data)) {
       return (
-        <div className={styles.tagArea} style={{ lineHeight: '1.0rem'}}>
+        <div className={styles.tagArea} style={{lineHeight: '1.0rem'}}>
           {!this.state.imgLoaded && (
             <Dimmer active>
-              <Loader />
+              <Loader/>
             </Dimmer>
           )}
           <PanZoomElement
@@ -2461,34 +2493,34 @@ export default class TaggerSpace extends Component {
             width={windowWidth}
             height={windowHeight}
           >
-              <img
-                draggable="false"
-                onLoad={() => {
-                  this.setState({ imgLoaded: true });
-                }}
-                className="no-flickr"
-                src={data}
-                style={{
-                  maxHeight: `${windowHeight}`,
-                  maxWidth: `${windowHeight}`,
-                  width: "auto",
-                  height: "auto",
-                  display: "block",
-                  margin: "auto",
-                  marginTop: "20px",
-                  cursor: "move"
-                }}
-              />
+            <img
+              draggable="false"
+              onLoad={() => {
+                this.setState({imgLoaded: true});
+              }}
+              className="no-flickr"
+              src={data}
+              style={{
+                maxHeight: `${windowHeight}`,
+                maxWidth: `${windowHeight}`,
+                width: "auto",
+                height: "auto",
+                display: "block",
+                margin: "auto",
+                marginTop: "20px",
+                cursor: "move"
+              }}
+            />
           </PanZoomElement>
           {this.state.projectDetails.task_type === IMAGE_CLASSIFICATION &&
-            this.state.currentTags &&
-            this.state.currentTags.size > 0 &&
-            this.showCurrentTags()}
+          this.state.currentTags &&
+          this.state.currentTags.size > 0 &&
+          this.showCurrentTags()}
         </div>
       );
     } else if (checkVideoURL(data)) {
       return (
-        <div className={styles.tagArea} style={{ lineHeight: '1.0rem'}}>
+        <div className={styles.tagArea} style={{lineHeight: '1.0rem'}}>
           <Player
             width={windowWidth}
             height={windowHeight}
@@ -2499,9 +2531,9 @@ export default class TaggerSpace extends Component {
             src={data}
           >
             <ControlBar autoHide={false}>
-              <ForwardControl seconds={5} order={3.1} />
-              <ForwardControl seconds={10} order={3.2} />
-              <ForwardControl seconds={30} order={3.3} />
+              <ForwardControl seconds={5} order={3.1}/>
+              <ForwardControl seconds={10} order={3.2}/>
+              <ForwardControl seconds={30} order={3.3}/>
               <PlaybackRateMenuButton
                 rates={[5, 3, 1.5, 1, 0.5, 0.1]}
                 order={7.1}
@@ -2509,9 +2541,9 @@ export default class TaggerSpace extends Component {
             </ControlBar>
           </Player>
           {this.state.projectDetails.task_type === VIDEO_CLASSIFICATION &&
-            this.state.currentTags &&
-            this.state.currentTags.size > 0 &&
-            this.showCurrentTags()}
+          this.state.currentTags &&
+          this.state.currentTags.size > 0 &&
+          this.showCurrentTags()}
         </div>
       );
     }
@@ -2519,7 +2551,7 @@ export default class TaggerSpace extends Component {
 
   annotateCallback = obj => {
     console.log("draw handle", obj, this.state);
-    const { data } = this.state.currentHit;
+    const {data} = this.state.currentHit;
     const boundingBoxMap = [];
     let changesInSession = 0;
     let newEntities = obj.newEntities;
@@ -2547,7 +2579,7 @@ export default class TaggerSpace extends Component {
               end: annotation.end,
               text: annotation.text
             });
-            boundingBoxMap.push({ label: annotation.category, points });
+            boundingBoxMap.push({label: annotation.category, points});
             changesInSession = changesInSession + 1;
           }
         } else {
@@ -2567,7 +2599,7 @@ export default class TaggerSpace extends Component {
             start: annotation.start,
             end: annotation.end,
           });
-          boundingBoxMap.push({ label: annotation.category, points });
+          boundingBoxMap.push({label: annotation.category, points});
           changesInSession = changesInSession + 1;
         }
       }
@@ -2602,7 +2634,7 @@ export default class TaggerSpace extends Component {
   showDocumentAnnotation() {
     // using a generator function
     console.log("doc annotation taggerspace ", this.state);
-    const { data } = this.state.currentHit;
+    const {data} = this.state.currentHit;
     const boundingBoxMap = this.state.boundingBoxMap;
     const annotations = [];
     if (this.state.boundingBoxMap) {
@@ -2633,10 +2665,10 @@ export default class TaggerSpace extends Component {
     return (
       <div className={styles.tagArea}>
         {this.state.entities.length > 0 &&
-          <div>
+        <div>
           <h3> Entities </h3>
           {this.showClassifyTags("false")}
-         </div>
+        </div>
         }
         <DocumentAnnotator
           ref={node => (this.docAnnotator = node)}
@@ -2673,7 +2705,7 @@ export default class TaggerSpace extends Component {
       const positions = [];
       for (let jindex = 0; jindex < timeMap.length; jindex++) {
         if (timeMap[jindex] !== undefined) {
-          positions.push({ points: obj.rects[key][jindex], time: timeMap[jindex] });
+          positions.push({points: obj.rects[key][jindex], time: timeMap[jindex]});
         }
       }
       // positions.push({points: obj.rects[key], time: timeMap[1]});
@@ -2696,16 +2728,16 @@ export default class TaggerSpace extends Component {
       changesInSession = changesInSession + 1;
     }
     console.log("boundingBoxMap is ", boundingBoxMap);
-    this.setState({ changesInSession, boundingBoxMap }, () => {
+    this.setState({changesInSession, boundingBoxMap}, () => {
       if (callback) callback(param);
     });
   };
 
   validPoints = (points) => {
-    for (let index = 0; index < points.length; index ++) {
+    for (let index = 0; index < points.length; index++) {
       if ((points[index][0] > 1.0 || points[index][1] > 1.0) ||
-            (points[index][0] < 0.0 || points[index][1] < 0.0))
-            return false;
+        (points[index][0] < 0.0 || points[index][1] < 0.0))
+        return false;
     }
     return true;
   }
@@ -2757,7 +2789,7 @@ export default class TaggerSpace extends Component {
       changesInSession = changesInSession + 1;
     }
     console.log("boundingBoxMap is ", boundingBoxMap);
-    this.setState({ changesInSession, boundingBoxMap });
+    this.setState({changesInSession, boundingBoxMap});
   };
 
   drawHandle = obj => {
@@ -2772,8 +2804,8 @@ export default class TaggerSpace extends Component {
       const rect = obj.rects[index];
       const points = [];
       console.log("draw handle rect is ", rect);
-      points.push({ x: rect.x1, y: rect.y1 });
-      points.push({ x: rect.x2, y: rect.y2 });
+      points.push({x: rect.x1, y: rect.y1});
+      points.push({x: rect.x2, y: rect.y2});
       boundingBoxMap.push({
         label: obj.rectCatMap[index],
         notes: obj.notes[index],
@@ -2801,13 +2833,13 @@ export default class TaggerSpace extends Component {
       newEntities,
       this.state.newEntities
     );
-    this.setState({ changesInSession, boundingBoxMap, newEntities });
+    this.setState({changesInSession, boundingBoxMap, newEntities});
   };
 
   showPolygonV2BoundingImages() {
     // using a generator function
     console.log("images are ", this.state);
-    const { data } = this.state.currentHit;
+    const {data} = this.state.currentHit;
     const boundingBoxMap = this.state.boundingBoxMap;
     console.log("show text v2", this.state);
     const rects = [];
@@ -2853,7 +2885,7 @@ export default class TaggerSpace extends Component {
           rects={rects}
           rectCatMap={rectCatMap}
           image={data}
-          drawHandle={(this.state.type === HIT_STATE_DONE || this.state.type === HIT_STATE_NOT_DONE) ? this.drawPolygon : undefined}
+          drawHandle={(this.isHitted() || this.state.type === HIT_STATE_NOT_DONE) ? this.drawPolygon : undefined}
           entityColorMap={this.state.entityColorMap}
           entitiesObject={this.state.entityJson}
         />
@@ -2864,7 +2896,7 @@ export default class TaggerSpace extends Component {
   showVideoAnnotation() {
     // using a generator function
     console.log("images are ", this.state);
-    const { data } = this.state.currentHit;
+    const {data} = this.state.currentHit;
     const boundingBoxMap = this.state.boundingBoxMap;
     console.log("show text v2", this.state);
     const rects = [];
@@ -2876,7 +2908,7 @@ export default class TaggerSpace extends Component {
       for (let index = 0; index < boundingBoxMap.length; index++) {
         rects[index] = [];
         let timeMap = [];
-        for (let jindex = 0; jindex < boundingBoxMap[index].positions.length; jindex ++) {
+        for (let jindex = 0; jindex < boundingBoxMap[index].positions.length; jindex++) {
           rects[index].push(boundingBoxMap[index].positions[jindex].points);
           timeMap.push(boundingBoxMap[index].positions[jindex].time)
         }
@@ -2912,7 +2944,7 @@ export default class TaggerSpace extends Component {
           rects={rects}
           rectCatMap={rectCatMap}
           video={data}
-          drawHandle={(this.state.type === HIT_STATE_DONE || this.state.type === HIT_STATE_NOT_DONE) ? this.drawVideo : undefined}
+          drawHandle={(this.isHitted() || this.state.type === HIT_STATE_NOT_DONE) ? this.drawVideo : undefined}
           entityColorMap={this.state.entityColorMap}
         />
       </div>
@@ -2922,7 +2954,7 @@ export default class TaggerSpace extends Component {
   showPolygonBoundingImages() {
     // using a generator function
     console.log("images are ", this.state);
-    const { data } = this.state.currentHit;
+    const {data} = this.state.currentHit;
     const boundingBoxMap = this.state.boundingBoxMap;
     console.log("show text", this.state);
     const rects = [];
@@ -2948,7 +2980,7 @@ export default class TaggerSpace extends Component {
           rects={rects}
           rectCatMap={rectCatMap}
           image={data}
-          drawHandle={(this.state.type === HIT_STATE_DONE || this.state.type === HIT_STATE_NOT_DONE) ? this.drawPolygon : undefined}
+          drawHandle={(this.isHitted() || this.state.type === HIT_STATE_NOT_DONE) ? this.drawPolygon : undefined}
           entityColorMap={this.state.entityColorMap}
         />
       </div>
@@ -2958,7 +2990,7 @@ export default class TaggerSpace extends Component {
   showBoundingImages() {
     // using a generator function
     console.log("images are ", this.state);
-    const { data } = this.state.currentHit;
+    const {data} = this.state.currentHit;
     const boundingBoxMap = this.state.boundingBoxMap;
     console.log("show text", this.state);
     const rects = [];
@@ -2979,7 +3011,7 @@ export default class TaggerSpace extends Component {
       }
     }
     return (
-      <div className={styles.tagArea} style={{ lineHeight: '1.0rem'}}>
+      <div className={styles.tagArea} style={{lineHeight: '1.0rem'}}>
         <BoxAnnotator
           loading={this.state.loading}
           space={this.state.type === HIT_STATE_NOT_DONE}
@@ -2999,7 +3031,7 @@ export default class TaggerSpace extends Component {
           rects={rects}
           rectCatMap={rectCatMap}
           image={data}
-          drawHandle={(this.state.type === HIT_STATE_DONE || this.state.type === HIT_STATE_NOT_DONE) ? this.drawHandle : undefined}
+          drawHandle={(this.isHitted() || this.state.type === HIT_STATE_NOT_DONE) ? this.drawHandle : undefined}
           entityColorMap={this.state.entityColorMap}
         />
       </div>
@@ -3041,10 +3073,10 @@ export default class TaggerSpace extends Component {
             key={index}
           >
             {entity}
-              {combo &&
-                <p style={{ fontSize: 'xx-small' }}>
-                ({combo})
-              </p>}
+            {combo &&
+            <p style={{fontSize: 'xx-small'}}>
+              ({combo})
+            </p>}
           </Label>
         );
       }
@@ -3056,30 +3088,39 @@ export default class TaggerSpace extends Component {
         height = '80%';
         minSearchEntities = 15;
       }
-      return (<div style={{ padding: '0 5% 0 5%', position: 'relative', marginLeft: '15px', borderRadius: '5px',
-                            backgroundColor: '#f5f9fa', border: '1px solid #eaf2f4', boxSizing: 'border-box',
-                            display: 'flex', justifyContent: 'flex-start', flexDirection: 'column',
-                            height: `${height}`, overflow: 'auto' }}>
-                <Label size="mini" attached="top left">
-                  Select Label
-                </Label>
-                <div>
-                  { entiti.length > minSearchEntities &&
-                    <Input size="mini" value={this.state.searchQuery} onChange={(event) => this.setState({searchQuery: event.target.value })} placeholder="Search..." />
-                  }
-                </div>
-                {renderArrs}
-            </div>);
+      return (<div style={{
+        padding: '0 5% 0 5%', position: 'relative', marginLeft: '15px', borderRadius: '5px',
+        backgroundColor: '#f5f9fa', border: '1px solid #eaf2f4', boxSizing: 'border-box',
+        display: 'flex', justifyContent: 'flex-start', flexDirection: 'column',
+        height: `${height}`, overflow: 'auto'
+      }}>
+        <Label size="mini" attached="top left">
+          Select Label
+        </Label>
+        <div>
+          {entiti.length > minSearchEntities &&
+          <Input size="mini" value={this.state.searchQuery}
+                 onChange={(event) => this.setState({searchQuery: event.target.value})} placeholder="Search..."/>
+          }
+        </div>
+        {renderArrs}
+      </div>);
     }
-    return <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', maxHeight: '10em', overflow: 'auto' }}>{renderArrs}</div>;
+    return <div style={{
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      maxHeight: '10em',
+      overflow: 'auto'
+    }}>{renderArrs}</div>;
   }
 
   deleteItem() {
     console.log('delete item');
     logEvent("buttons", 'delete');
     logEvent("Mark As", 'Delete');
-    const { currentHit } = this.state;
-    this.setState({ loading: true, action: 'moveToDone' });
+    const {currentHit} = this.state;
+    this.setState({loading: true, action: 'moveToDone'});
     updateHitStatus(currentHit.id, this.props.currentProject, HIT_STATE_DELETED, '', this.moveToDoneCallback.bind(this));
   }
 
@@ -3087,8 +3128,8 @@ export default class TaggerSpace extends Component {
     console.log('retag item');
     logEvent("buttons", 'Retag');
     logEvent("Mark As", 'Retag');
-    const { currentHit } = this.state;
-    this.setState({ loading: true, action: 'moveToDone' });
+    const {currentHit} = this.state;
+    this.setState({loading: true, action: 'moveToDone'});
     updateHitStatus(currentHit.id, this.props.currentProject, HIT_STATE_REQUEUED, '', this.moveToDoneCallback.bind(this));
   }
 
@@ -3096,7 +3137,7 @@ export default class TaggerSpace extends Component {
   showActionButtons() {
     return (
       <div>
-        <br />
+        <br/>
         <div
           style={{
             padding: "1rem",
@@ -3115,12 +3156,12 @@ export default class TaggerSpace extends Component {
               icon
               onClick={this.moveToDone.bind(this, "moveToDone")}
             >
-              <Icon name="save" />
+              <Icon name="save"/>
               Mark as Done
             </Button>
           )}
-          <br />
-          {(this.state.type === HIT_STATE_DONE ||
+          <br/>
+          {(this.isHitted() ||
             this.state.type === HIT_STATE_PRE_TAGGED ||
             this.state.type === HIT_STATE_REQUEUED ||
             this.state.type === HIT_STATE_DELETED) && (
@@ -3132,15 +3173,15 @@ export default class TaggerSpace extends Component {
               icon
               onClick={this.moveToSkip.bind(this)}
             >
-              <Icon name="mail forward" />
+              <Icon name="mail forward"/>
               Mark as Skipped
             </Button>
           )}
-          <br />
-          { (this.state.type === HIT_STATE_SKIPPED ||
-              this.state.type === HIT_STATE_DONE ||
-              this.state.type === HIT_STATE_PRE_TAGGED ||
-              this.state.type === HIT_STATE_REQUEUED) && (
+          <br/>
+          {(this.state.type === HIT_STATE_SKIPPED ||
+            this.isHitted() ||
+            this.state.type === HIT_STATE_PRE_TAGGED ||
+            this.state.type === HIT_STATE_REQUEUED) && (
             <Button
               compact
               size="mini"
@@ -3148,15 +3189,15 @@ export default class TaggerSpace extends Component {
               icon
               onClick={this.deleteItem.bind(this)}
             >
-              <Icon name="delete" />
+              <Icon name="delete"/>
               Delete
             </Button>
           )}
-          <br />
-          { (this.state.type === HIT_STATE_DONE ||
-              this.state.type === HIT_STATE_SKIPPED ||
-                this.state.type === HIT_STATE_PRE_TAGGED ||
-                  this.state.type === HIT_STATE_DELETED) && (
+          <br/>
+          {(this.isHitted() ||
+            this.state.type === HIT_STATE_SKIPPED ||
+            this.state.type === HIT_STATE_PRE_TAGGED ||
+            this.state.type === HIT_STATE_DELETED) && (
             <Button
               title="Move HIT to Re-tagging Queue"
               compact
@@ -3165,7 +3206,7 @@ export default class TaggerSpace extends Component {
               icon
               onClick={this.retagHit.bind(this)}
             >
-              <Icon name="undo" />
+              <Icon name="undo"/>
               Requeue
             </Button>
           )}
@@ -3177,17 +3218,17 @@ export default class TaggerSpace extends Component {
   evaluateHit(value) {
     console.log('evaluate hit', value);
     logEvent("evaluation", value);
-    const { currentHit } = this.state;
-    this.setState({ loding: true });
+    const {currentHit} = this.state;
+    this.setState({loding: true});
     addHitEvaluation(currentHit.id, this.props.currentProject, value, this.evaluationCallback.bind(this, value));
   }
 
   showEvaluationButtons() {
     return (
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div style={{display: "flex", justifyContent: "center"}}>
         <Button.Group size="mini">
           <Button onClick={this.evaluateHit.bind(this, 'incorrect')} color="blue">Incorrect</Button>
-          <Button.Or />
+          <Button.Or/>
           <Button onClick={this.evaluateHit.bind(this, 'correct')} color="blue">Correct</Button>
         </Button.Group>
       </div>
@@ -3198,7 +3239,7 @@ export default class TaggerSpace extends Component {
     let confirmed = true;
     logEvent("buttons", "Next Row");
     logEvent("navigation", "Next");
-    if (this.state.changesInSession > 0 && this.state.type === HIT_STATE_DONE) {
+    if (this.state.changesInSession > 0 && this.isHitted()) {
       confirmed = confirm("You have made some changes in session, will you like to save them ?");
     }
     if (confirmed) {
@@ -3208,10 +3249,18 @@ export default class TaggerSpace extends Component {
         this.getBackTopreviousRow();
       }
     } else {
-      this.setState({ changesInSession: 0 });
+      this.setState({changesInSession: 0});
       this.hitAddCallback(undefined, "Ok", action);
     }
     return false;
+  }
+
+  /**
+   * @Description: 是否已经标注过,新增HIT_STATE_SL,HIT_STATE_AL
+   * @date 2020/2/27
+  */
+  isHitted() {
+    return this.state.type === HIT_STATE_DONE || this.state.type === HIT_STATE_SL || this.state.type === HIT_STATE_AL;
   }
 
   showButtonsMini() {
@@ -3246,8 +3295,8 @@ export default class TaggerSpace extends Component {
         const combo = convertKeyToString(shortcuts.moveToDone);
         // prevButton = 'Previous (' + combo + ')';
         if (this.state.type === HIT_STATE_SKIPPED ||
-            this.state.type === HIT_STATE_PRE_TAGGED ||
-            this.state.type === HIT_STATE_REQUEUED) {
+          this.state.type === HIT_STATE_PRE_TAGGED ||
+          this.state.type === HIT_STATE_REQUEUED) {
           Mousetrap.bind(combo, this.moveToDone.bind(this));
         } else {
           Mousetrap.unbind(combo);
@@ -3256,10 +3305,10 @@ export default class TaggerSpace extends Component {
     }
     return (
       <div>
-        <br />
+        <br/>
         <div
           className="marginTopExtra"
-          style={{ display: "flex", justifyContent: "space-around" }}
+          style={{display: "flex", justifyContent: "space-around"}}
         >
           <Button
             title="Previous Element"
@@ -3270,9 +3319,9 @@ export default class TaggerSpace extends Component {
             onClick={this.nextRow.bind(this, 'previous')}
             disabled={this.state.currentIndex <= 0}
           >
-            <Icon name="left arrow" />
+            <Icon name="left arrow"/>
           </Button>
-          { (this.state.changesInSession > 0 && this.state.type === HIT_STATE_DONE) && (
+          {(this.state.changesInSession > 0 && this.isHitted()) && (
             <Button
               size="mini"
               color="green"
@@ -3282,7 +3331,7 @@ export default class TaggerSpace extends Component {
               onClick={this.saveElement.bind(this)}
               disabled={this.state.currentIndex < 0}
             >
-              <Icon name="save" />
+              <Icon name="save"/>
             </Button>
           )}
           {this.state.type === "notDone" && (
@@ -3294,7 +3343,7 @@ export default class TaggerSpace extends Component {
               onClick={this.skipRow}
               disabled={this.state.currentIndex < 0}
             >
-              <Icon name="mail forward" />
+              <Icon name="mail forward"/>
             </Button>
           )}
           <Button
@@ -3306,7 +3355,7 @@ export default class TaggerSpace extends Component {
             onClick={this.nextRow.bind(this, 'next')}
             disabled={nextButtonDisabled}
           >
-            <Icon name="right arrow" />
+            <Icon name="right arrow"/>
           </Button>
         </div>
       </div>
@@ -3374,7 +3423,7 @@ export default class TaggerSpace extends Component {
           padding: '0.5rem'
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly'}}>
+        <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly'}}>
           <div title={prevButton}>
             <Button
               size="mini"
@@ -3386,7 +3435,7 @@ export default class TaggerSpace extends Component {
               onClick={this.getBackTopreviousRow}
               disabled={this.state.currentIndex <= 0}
             >
-              <Icon name="left arrow" />
+              <Icon name="left arrow"/>
               Previous
             </Button>
           </div>
@@ -3402,11 +3451,11 @@ export default class TaggerSpace extends Component {
               disabled={nextButtonDisabled}
             >
               Next
-              <Icon name="right arrow" />
+              <Icon name="right arrow"/>
             </Button>
           </div>
         </div>
-        <br />
+        <br/>
         <div title={moveToDoneButton}>
           <Button
             size="mini"
@@ -3416,11 +3465,11 @@ export default class TaggerSpace extends Component {
             labelPosition="left"
             onClick={this.moveToDone.bind(this, "saveToDone")}
           >
-            <Icon name="save" />
+            <Icon name="save"/>
             Move to Done
           </Button>
         </div>
-        <br />
+        <br/>
         <div title={skipButton}>
           <Button
             size="mini"
@@ -3431,7 +3480,7 @@ export default class TaggerSpace extends Component {
             onClick={this.skipRow}
             disabled={this.state.currentIndex < 0}
           >
-            <Icon name="mail forward" />
+            <Icon name="mail forward"/>
             Skip
           </Button>
         </div>
@@ -3455,10 +3504,10 @@ export default class TaggerSpace extends Component {
           onClick={this.getBackTopreviousRow}
           disabled={this.state.currentIndex <= 0}
         >
-          <Icon name="left arrow" />
+          <Icon name="left arrow"/>
           {prevButton}
         </Button>
-        <br />
+        <br/>
         <Button
           size="mini"
           color="grey"
@@ -3468,10 +3517,10 @@ export default class TaggerSpace extends Component {
           onClick={this.skipRow}
           disabled={this.state.currentIndex < 0}
         >
-          <Icon name="mail forward" />
+          <Icon name="mail forward"/>
           {skipButton}
         </Button>
-        <br />
+        <br/>
         <Button
           size="mini"
           color="blue"
@@ -3480,10 +3529,10 @@ export default class TaggerSpace extends Component {
           labelPosition="left"
           onClick={this.moveToDone.bind(this, "saveToDone")}
         >
-          <Icon name="save" />
+          <Icon name="save"/>
           {moveToDoneButton}
         </Button>
-        <br />
+        <br/>
         <Button
           size="mini"
           color="blue"
@@ -3494,7 +3543,7 @@ export default class TaggerSpace extends Component {
           disabled={nextButtonDisabled}
         >
           {nextButton}
-          <Icon name="right arrow" />
+          <Icon name="right arrow"/>
         </Button>
       </div>
     );
@@ -3503,9 +3552,9 @@ export default class TaggerSpace extends Component {
   toggleAutoLabel = () => {
     console.log("toggleAutoLabel");
     if (this.state.autoLabel) {
-      this.setState({ autoLabel: false });
+      this.setState({autoLabel: false});
     } else {
-      this.setState({ autoLabel: true });
+      this.setState({autoLabel: true});
     }
   };
 
@@ -3513,9 +3562,9 @@ export default class TaggerSpace extends Component {
     console.log("toggleAutoClose");
     logEvent("buttons", "Auto Close", !this.state.autoClose);
     if (this.state.autoClose) {
-      this.setState({ autoClose: false });
+      this.setState({autoClose: false});
     } else {
-      this.setState({ autoClose: true });
+      this.setState({autoClose: true});
     }
   };
 
@@ -3523,9 +3572,9 @@ export default class TaggerSpace extends Component {
     console.log("toggleAutoClose");
     logEvent("buttons", "Notes Toggle", !this.state.notes);
     if (this.state.notes) {
-      this.setState({ notes: false });
+      this.setState({notes: false});
     } else {
-      this.setState({ notes: true });
+      this.setState({notes: true});
     }
   };
 
@@ -3533,9 +3582,9 @@ export default class TaggerSpace extends Component {
     console.log("toggleAutoClose");
     logEvent("buttons", "Hide Labels Toggle", !this.state.hideLabels);
     if (this.state.hideLabels) {
-      this.setState({ hideLabels: false });
+      this.setState({hideLabels: false});
     } else {
-      this.setState({ hideLabels: true });
+      this.setState({hideLabels: true});
     }
   };
 
@@ -3543,18 +3592,18 @@ export default class TaggerSpace extends Component {
     console.log("toggleAutoClose");
     logEvent("buttons", "Hide Labels Toggle", !this.state.keepEntitySelected);
     if (this.state.keepEntitySelected) {
-      this.setState({ keepEntitySelected: false });
+      this.setState({keepEntitySelected: false});
     } else {
-      this.setState({ keepEntitySelected: true });
+      this.setState({keepEntitySelected: true});
     }
   };
 
   handleClick = (event, titleProps) => {
-    const { index } = titleProps;
-    const { activeIndex } = this.state;
+    const {index} = titleProps;
+    const {activeIndex} = this.state;
     const newIndex = activeIndex === index ? -1 : index;
 
-    this.setState({ activeIndex: newIndex });
+    this.setState({activeIndex: newIndex});
   };
 
   handleNoteChange = event => {
@@ -3594,7 +3643,7 @@ export default class TaggerSpace extends Component {
   };
 
   showTaggingInstructions() {
-    const { activeIndex } = this.state;
+    const {activeIndex} = this.state;
     console.log('showTaggingInstructions');
     return (
       <Accordion>
@@ -3603,8 +3652,8 @@ export default class TaggerSpace extends Component {
           index={0}
           onClick={this.handleClick}
         >
-          <Icon name="dropdown" />
-          <Label size="mini" style={{ background: "#a9d5de" }}>
+          <Icon name="dropdown"/>
+          <Label size="mini" style={{background: "#a9d5de"}}>
             Project Guidelines
           </Label>
         </Accordion.Title>
@@ -3627,7 +3676,7 @@ export default class TaggerSpace extends Component {
     // let keyboarS = 'Configure Keyboard Shortcuts';
     if (this.state.projectDetails) {
       keyobardPopover = (
-        <Popover id="popover-positioned-top" style={{ whiteSpace: "pre" }}>
+        <Popover id="popover-positioned-top" style={{whiteSpace: "pre"}}>
           {this.getKeyboardShortcuts(this.state.shortcuts)}
         </Popover>
       );
@@ -3647,7 +3696,7 @@ export default class TaggerSpace extends Component {
       }
     }
     const fullScreenPopover = (
-      <Popover id="popover-positioned-top" title="Full Screen" />
+      <Popover id="popover-positioned-top" title="Full Screen"/>
     );
     if (this.state.rules && this.state.projectDetails) {
       popupContent = popupContent + " " + this.state.rules.instructions;
@@ -3716,7 +3765,7 @@ export default class TaggerSpace extends Component {
       return (
         <div className="text-center">
           <Input
-            action={{ color: "teal", size: "tiny", icon: "sticky note" }}
+            action={{color: "teal", size: "tiny", icon: "sticky note"}}
             actionPosition="left"
             value={this.state.currentNote}
             onChange={this.handleNoteChange}
@@ -3732,88 +3781,88 @@ export default class TaggerSpace extends Component {
 
     if (this.state.hits && this.state.hitsCompleted)
       return (
-                  <div>
-                    {this.state.type === "notDone" && (
-                      <Segment color="green" className="marginTopExtra">
-                        {this.state.type &&
-                          this.state.type === "skipped" && (
-                            <h4>
-                              {" "}
-                              All skipped rows are tagged, You can check the
-                              project stats.{" "}
-                            </h4>
-                          )}
-                        {this.state.type &&
-                          this.state.type !== "skipped" && (
-                            <h4>
-                              {" "}
-                              All rows are tagged, You can check the project
-                              stats.{" "}
-                            </h4>
-                          )}
-                        {!this.state.type && (
-                          <h4>
-                            {" "}
-                            All items are tagged, You can check the project
-                            stats.{" "}
-                          </h4>
-                        )}
-                        <Button
-                          onClick={() =>
-                            this.props.pushState(
-                              "/projects/" +
-                                this.props.params.orgName +
-                                "/" +
-                                this.props.params.projectName
-                            )
-                          }
-                        >
-                          Show project stats
-                        </Button>
-                        <div style={{ height: "30px" }} />
-                        <Button
-                          onClick={() =>
-                            this.props.pushState(
-                              "/projects/" +
-                                this.props.params.orgName +
-                                "/" +
-                                this.props.params.projectName +
-                                "/space?type=done"
-                            )
-                          }
-                        >
-                          Show Completed HITs
-                        </Button>
-                        <div style={{ height: "30px" }} />
-                        <Button
-                          onClick={() =>
-                            this.props.pushState(
-                              "/projects/" +
-                                this.props.params.orgName +
-                                "/" +
-                                this.props.params.projectName +
-                                "/space?type=skipped"
-                            )
-                          }
-                        >
-                          Show Skipped HITs
-                        </Button>
-                      </Segment>
-                    )}
-                  </div>
-                );
+        <div>
+          {this.state.type === "notDone" && (
+            <Segment color="green" className="marginTopExtra">
+              {this.state.type &&
+              this.state.type === "skipped" && (
+                <h4>
+                  {" "}
+                  All skipped rows are tagged, You can check the
+                  project stats.{" "}
+                </h4>
+              )}
+              {this.state.type &&
+              this.state.type !== "skipped" && (
+                <h4>
+                  {" "}
+                  All rows are tagged, You can check the project
+                  stats.{" "}
+                </h4>
+              )}
+              {!this.state.type && (
+                <h4>
+                  {" "}
+                  All items are tagged, You can check the project
+                  stats.{" "}
+                </h4>
+              )}
+              <Button
+                onClick={() =>
+                  this.props.pushState(
+                    "/projects/" +
+                    this.props.params.orgName +
+                    "/" +
+                    this.props.params.projectName
+                  )
+                }
+              >
+                Show project stats
+              </Button>
+              <div style={{height: "30px"}}/>
+              <Button
+                onClick={() =>
+                  this.props.pushState(
+                    "/projects/" +
+                    this.props.params.orgName +
+                    "/" +
+                    this.props.params.projectName +
+                    "/space?type=done"
+                  )
+                }
+              >
+                Show Completed HITs
+              </Button>
+              <div style={{height: "30px"}}/>
+              <Button
+                onClick={() =>
+                  this.props.pushState(
+                    "/projects/" +
+                    this.props.params.orgName +
+                    "/" +
+                    this.props.params.projectName +
+                    "/space?type=skipped"
+                  )
+                }
+              >
+                Show Skipped HITs
+              </Button>
+            </Segment>
+          )}
+        </div>
+      );
     // const docLabels = this.docAnnotator ? this.docAnnotator.getLabels() : undefined;
     // console.log('doclabels ', docLabels);
     // const { tagLine } = this.state;
     return (
       <div>
-        {!this.props.projectDetails && <Segment basic vertical loading />}
+        {!this.props.projectDetails && <Segment basic vertical loading/>}
         {this.props.projectDetails && (
-          <div style={{ display: "flex", flexDirection: "row" }}>
+          <div style={{display: "flex", flexDirection: "row"}}>
             {this.state.type !== HIT_STATE_NOT_DONE && this.props.projectDetails.task_type !== POS_TAGGING && (
-              <Segment raised style={{ width: '20%' }}>
+              <Segment raised style={{width: '20%'}}>
                 <h4
-                  style={{ textTransform: "capitalize", marginTop: "0.5rem" }}
+                  style={{textTransform: "capitalize", marginTop: "0.5rem"}}
                 >
                   {" "}
                   HITs Overview{" "}
@@ -3821,8 +3870,8 @@ export default class TaggerSpace extends Component {
                 {this.getHitDetails(this.state.currentHit)}
                 {this.showButtonsMini()}
                 {this.showActionButtons()}
-                <br />
-                {this.state.type === HIT_STATE_DONE && (
+                <br/>
+                {this.isHitted() && (
                   <div>
                     <h4> Evaluate Tagging </h4>
                     {this.showEvaluationButtons()}
@@ -3846,10 +3895,10 @@ export default class TaggerSpace extends Component {
                 }}
               >
                 <div style={{
-                    display: "flex",
-                    flexDirection: 'row',
-                    justifyContent: "space-around",
-                  }}>
+                  display: "flex",
+                  flexDirection: 'row',
+                  justifyContent: "space-around",
+                }}>
                   <Button
                     icon
                     title="Back"
@@ -3857,14 +3906,14 @@ export default class TaggerSpace extends Component {
                     onClick={() =>
                       this.props.pushState(
                         "/projects/" +
-                          this.props.params.orgName +
-                          "/" +
-                          this.props.params.projectName
+                        this.props.params.orgName +
+                        "/" +
+                        this.props.params.projectName
                       )
                     }
                     compact
                   >
-                    <Icon color="teal" name="arrow left" />
+                    <Icon color="teal" name="arrow left"/>
                   </Button>
 
                   <Button
@@ -3878,108 +3927,108 @@ export default class TaggerSpace extends Component {
                     }
                     compact
                   >
-                    <Icon size="large" name="home" color="teal" />
+                    <Icon size="large" name="home" color="teal"/>
                   </Button>
-              {this.state.type !== HIT_STATE_NOT_DONE && this.props.projectDetails.task_type !== POS_TAGGING && (
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-                  {this.getHitStates()}
-                  <br />
-                  {this.state.type === HIT_STATE_DONE &&
-                    this.getEvaluations()}
-                  <br />
-                  { (this.state.type === HIT_STATE_DONE && !this.state.evaluationType) &&
-                    this.getContributors(this.state.contributorDetails)}
-                  <br />
-                  {this.state.type === HIT_STATE_DONE && !this.state.evaluationType &&
-                    this.state.entities &&
-                    this.state.entities.length > 0 &&
-                    this.getEntities(this.state.entities)}
-                </div>
-              )}
+                  {this.state.type !== HIT_STATE_NOT_DONE && this.props.projectDetails.task_type !== POS_TAGGING && (
+                    <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                      {this.getHitStates()}
+                      <br/>
+                      {this.isHitted() &&
+                      this.getEvaluations()}
+                      <br/>
+                      {(this.isHitted() && !this.state.evaluationType) &&
+                      this.getContributors(this.state.contributorDetails)}
+                      <br/>
+                      {this.isHitted() && !this.state.evaluationType &&
+                      this.state.entities &&
+                      this.state.entities.length > 0 &&
+                      this.getEntities(this.state.entities)}
+                    </div>
+                  )}
                 </div>
                 {(this.state.type === HIT_STATE_NOT_DONE || this.props.projectDetails.task_type === POS_TAGGING) &&
-                  <div style={{ flexGrow: 2, alignSelf: 'center'}}>{this.showTaggingInstructions()}</div>
+                <div style={{flexGrow: 2, alignSelf: 'center'}}>{this.showTaggingInstructions()}</div>
                 }
-                { this.state.type === HIT_STATE_NOT_DONE && this.state.currentHit &&
-                  <div style={{ flexGrow: 1.5, alignSelf: 'center' }}> {this.getHitInfo(this.state.currentHit)} </div>
+                {this.state.type === HIT_STATE_NOT_DONE && this.state.currentHit &&
+                <div style={{flexGrow: 1.5, alignSelf: 'center'}}> {this.getHitInfo(this.state.currentHit)} </div>
                 }
                 {this.state.type === HIT_STATE_NOT_DONE &&
-                  this.props.projectDetails.task_type === IMAGE_BOUNDING_BOX &&
-                  !this.state.hitsCompleted && (
-                    <div className="text-center" style={{}}>
-                      <Checkbox
-                        size="mini"
-                        checked={this.state.notes}
-                        onClick={this.toggleNotes.bind(this)}
-                        label="Show Notes"
-                      />
-                      &nbsp; &nbsp;
-                      <Checkbox
-                        size="mini"
-                        checked={this.state.hideLabels}
-                        onClick={this.toggleHideLabels.bind(this)}
-                        label="Hide Labels"
-                      />
-                      &nbsp; &nbsp;
-                      <Checkbox
-                        size="mini"
-                        checked={this.state.autoClose}
-                        onClick={this.toggleAutoClose.bind(this)}
-                        label="AutoClose"
-                      />
-                    </div>
-                  )}
-                  {this.state.type === HIT_STATE_NOT_DONE &&
-                  this.props.projectDetails.task_type === IMAGE_POLYGON_BOUNDING_BOX_V2 &&
-                  !this.state.hitsCompleted && (
-                    <div className="text-center" style={{}}>
-                      <Checkbox
-                        size="mini"
-                        checked={this.state.keepEntitySelected}
-                        onClick={this.toggleEntitySelected.bind(this)}
-                        label="Keep Entity Selected"
-                      />
-                    </div>
-                  )}
+                this.props.projectDetails.task_type === IMAGE_BOUNDING_BOX &&
+                !this.state.hitsCompleted && (
+                  <div className="text-center" style={{}}>
+                    <Checkbox
+                      size="mini"
+                      checked={this.state.notes}
+                      onClick={this.toggleNotes.bind(this)}
+                      label="Show Notes"
+                    />
+                    &nbsp; &nbsp;
+                    <Checkbox
+                      size="mini"
+                      checked={this.state.hideLabels}
+                      onClick={this.toggleHideLabels.bind(this)}
+                      label="Hide Labels"
+                    />
+                    &nbsp; &nbsp;
+                    <Checkbox
+                      size="mini"
+                      checked={this.state.autoClose}
+                      onClick={this.toggleAutoClose.bind(this)}
+                      label="AutoClose"
+                    />
+                  </div>
+                )}
                 {this.state.type === HIT_STATE_NOT_DONE &&
-                  (this.props.projectDetails.task_type ===
-                    DOCUMENT_ANNOTATION ||
-                    this.props.projectDetails.task_type ===
-                      POS_TAGGING_GENERIC) &&
-                  !this.state.hitsCompleted && (
-                    <div>
-                      <Checkbox
-                        checked={this.state.autoClose}
-                        onClick={this.toggleAutoClose.bind(this)}
-                        label="AutoClose on Selection"
-                      />
-                      &nbsp; &nbsp;
-                      <Checkbox
-                        checked={this.state.autoLabel}
-                        onClick={this.toggleAutoLabel.bind(this)}
-                        label="Autolabel Same Text in Document"
-                      />
-                      &nbsp; &nbsp;
-                      <Button
-                        disabled={this.state.undoButton}
-                        size="mini"
-                        icon
-                        onClick={() => this.docAnnotator.undo()}
-                      >
-                        Undo
-                      </Button>
-                      &nbsp; &nbsp;
-                      <Button
-                        size="mini"
-                        icon
-                        onClick={() => this.docAnnotator.clearAll()}
-                      >
-                        Clear All
-                      </Button>
-                    </div>
-                  )}
+                this.props.projectDetails.task_type === IMAGE_POLYGON_BOUNDING_BOX_V2 &&
+                !this.state.hitsCompleted && (
+                  <div className="text-center" style={{}}>
+                    <Checkbox
+                      size="mini"
+                      checked={this.state.keepEntitySelected}
+                      onClick={this.toggleEntitySelected.bind(this)}
+                      label="Keep Entity Selected"
+                    />
+                  </div>
+                )}
+                {this.state.type === HIT_STATE_NOT_DONE &&
+                (this.props.projectDetails.task_type ===
+                  DOCUMENT_ANNOTATION ||
+                  this.props.projectDetails.task_type ===
+                  POS_TAGGING_GENERIC) &&
+                !this.state.hitsCompleted && (
+                  <div>
+                    <Checkbox
+                      checked={this.state.autoClose}
+                      onClick={this.toggleAutoClose.bind(this)}
+                      label="AutoClose on Selection"
+                    />
+                    &nbsp; &nbsp;
+                    <Checkbox
+                      checked={this.state.autoLabel}
+                      onClick={this.toggleAutoLabel.bind(this)}
+                      label="Autolabel Same Text in Document"
+                    />
+                    &nbsp; &nbsp;
+                    <Button
+                      disabled={this.state.undoButton}
+                      size="mini"
+                      icon
+                      onClick={() => this.docAnnotator.undo()}
+                    >
+                      Undo
+                    </Button>
+                    &nbsp; &nbsp;
+                    <Button
+                      size="mini"
+                      icon
+                      onClick={() => this.docAnnotator.clearAll()}
+                    >
+                      Clear All
+                    </Button>
+                  </div>
+                )}
                 {(this.state.type === HIT_STATE_NOT_DONE || this.props.projectDetails.task_type === POS_TAGGING) && (
-                  <div style={{ display: "flex" }}>
+                  <div style={{display: "flex"}}>
                     {popoverTop && (
                       <div>
                         <OverlayTrigger
@@ -4000,7 +4049,7 @@ export default class TaggerSpace extends Component {
                 )}
 
                 {(this.state.type === HIT_STATE_NOT_DONE || this.props.projectDetails.task_type === POS_TAGGING) && (
-                  <div style={{ display: "flex" }}>
+                  <div style={{display: "flex"}}>
                     {keyobardPopover && (
                       <div>
                         <OverlayTrigger
@@ -4014,10 +4063,10 @@ export default class TaggerSpace extends Component {
                             onClick={() =>
                               this.props.pushState(
                                 "/projects/" +
-                                  this.props.params.orgName +
-                                  "/" +
-                                  this.props.params.projectName +
-                                  "/keybind"
+                                this.props.params.orgName +
+                                "/" +
+                                this.props.params.projectName +
+                                "/keybind"
                               )
                             }
                             compact
@@ -4035,367 +4084,301 @@ export default class TaggerSpace extends Component {
 
 
                 {(this.state.type === HIT_STATE_NOT_DONE || this.props.projectDetails.task_type === POS_TAGGING) && (
-                  <div style={{ display: "flex" }}>
+                  <div style={{display: "flex"}}>
                     {fullScreenPopover &&
-                      (this.props.projectDetails.task_type !==
-                        VIDEO_BOUNDING_BOX &&
-                        this.props.projectDetails.task_type !==
-                          VIDEO_CLASSIFICATION) && (
-                        <div>
-                          <OverlayTrigger
-                            trigger={["hover"]}
-                            placement="bottom"
-                            overlay={fullScreenPopover}
+                    (this.props.projectDetails.task_type !==
+                      VIDEO_BOUNDING_BOX &&
+                      this.props.projectDetails.task_type !==
+                      VIDEO_CLASSIFICATION) && (
+                      <div>
+                        <OverlayTrigger
+                          trigger={["hover"]}
+                          placement="bottom"
+                          overlay={fullScreenPopover}
+                        >
+                          <Button
+                            compact
+                            size="mini"
+                            icon
+                            onClick={() => {
+                              if (!this.state.fullScreen)
+                                this.setState({fullScreen: true});
+                              else this.setState({fullScreen: false});
+                            }}
                           >
-                            <Button
-                              compact
-                              size="mini"
-                              icon
-                              onClick={() => {
-                                if (!this.state.fullScreen)
-                                  this.setState({ fullScreen: true });
-                                else this.setState({ fullScreen: false });
-                              }}
-                            >
-                              {!this.state.fullScreen && (
-                                <Icon color="blue" name="expand" />
-                              )}
-                              {this.state.fullScreen && (
-                                <Icon color="blue" name="compress" />
-                              )}
-                            </Button>
-                          </OverlayTrigger>
-                        </div>
-                      )}
+                            {!this.state.fullScreen && (
+                              <Icon color="blue" name="expand"/>
+                            )}
+                            {this.state.fullScreen && (
+                              <Icon color="blue" name="compress"/>
+                            )}
+                          </Button>
+                        </OverlayTrigger>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-                <br />
+              <br/>
               {this.state.type === "notDone" &&
-                (this.props.projectDetails.task_type === DOCUMENT_ANNOTATION ||
-                  this.props.projectDetails.task_type ===
-                    POS_TAGGING_GENERIC) && (
-                  <div>
-                    <p
-                      style={{
-                        width: "50%",
-                        border: "1px solid black",
-                        padding: "0.5rem",
-                        fontSize: "14px",
-                        opacity: "0.7",
-                        lineHeight: "1.2em"
-                      }}
-                    >
-                      <li>
-                        Click on the document and then drag to select text and
-                        select a label.
-                      </li>
-                      <li>
-                        More queries?{" "}
-                        <a
-                          href="https://dataturks.com/help/help.php"
-                          target="_blank"
-                        >
-                          {" "}
-                          See Demo Videos{" "}
-                        </a>
-                      </li>
-                    </p>
-                  </div>
-                )}
-              {this.state.loading && <Segment loading={this.state.loading} basic vertical />}
-                {this.state.type !== HIT_STATE_NOT_DONE && !this.state.loading && this.props.projectDetails && (
-                  <div className="text-center">{this.state.hits.length === 0 && <h2> No items to display here </h2>}</div>
-                )}
+              (this.props.projectDetails.task_type === DOCUMENT_ANNOTATION ||
+                this.props.projectDetails.task_type ===
+                POS_TAGGING_GENERIC) && (
+                <div>
+                  <p
+                    style={{
+                      width: "50%",
+                      border: "1px solid black",
+                      padding: "0.5rem",
+                      fontSize: "14px",
+                      opacity: "0.7",
+                      lineHeight: "1.2em"
+                    }}
+                  >
+                    <li>
+                      Click on the document and then drag to select text and
+                      select a label.
+                    </li>
+                    <li>
+                      More queries?{" "}
+                      <a
+                        href="https://dataturks.com/help/help.php"
+                        target="_blank"
+                      >
+                        {" "}
+                        See Demo Videos{" "}
+                      </a>
+                    </li>
+                  </p>
+                </div>
+              )}
+              {this.state.loading && <Segment loading={this.state.loading} basic vertical/>}
+              {this.state.type !== HIT_STATE_NOT_DONE && !this.state.loading && this.props.projectDetails && (
+                <div className="text-center">{this.state.hits.length === 0 && <h2> No items to display here </h2>}</div>
+              )}
 
               {this.state.hits &&
-                this.state.currentHit && (
-                  <div
-                    style={{
-                      backgroundColor: "#ffffff",
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "space-between"
-                    }}
-                    loading={this.state.loading}
-                  >
-                      {this.props.projectDetails.task_type === POS_TAGGING && (
-                        <Fullscreen
-                          enabled={this.state.fullScreen}
-                          onChange={isFullscreenEnabled =>
-                            this.setState({
-                              isFullscreenEnabled,
-                              fullScreen: isFullscreenEnabled
-                            })
-                          }
-                        >
-                          <div className="marginTopExtra">
-                            {prevWord && (
-                              <div className="text-left">
-                                <p>
-                                  {" "}
-                                  Previous Word Shortcut: <b>{prevWord}</b>
-                                </p>
-                              </div>
-                            )}
-                            {nextWord && (
-                              <div className="text-left">
-                                <p>
-                                  {" "}
-                                  Next Word Shortcut: <b> {nextWord} </b>{" "}
-                                </p>
-                              </div>
-                            )}
-                            {extra && <div>{this.showExtra(extra)}</div>}
-                            {this.showTagLine()}
-                            <br />
-                            <h3>Entities</h3>
-                            <br />
-                            {this.showTags(this.state.entities)}
-                            {this.state.loading &&
-                              this.state.isFullscreenEnabled && (
-                                <Segment basic vertical loading />
-                              )}
-                            <div
-                              style={{ height: "20px" }}
-                              disabled={this.state.loading}
-                            />
-                            {this.showButtons()}
+              this.state.currentHit && (
+                <div
+                  style={{
+                    backgroundColor: "#ffffff",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between"
+                  }}
+                  loading={this.state.loading}
+                >
+                  {this.props.projectDetails.task_type === POS_TAGGING && (
+                    <Fullscreen
+                      enabled={this.state.fullScreen}
+                      onChange={isFullscreenEnabled =>
+                        this.setState({
+                          isFullscreenEnabled,
+                          fullScreen: isFullscreenEnabled
+                        })
+                      }
+                    >
+                      <div className="marginTopExtra">
+                        {prevWord && (
+                          <div className="text-left">
+                            <p>
+                              {" "}
+                              Previous Word Shortcut: <b>{prevWord}</b>
+                            </p>
                           </div>
-                        </Fullscreen>
-                      )}
-                      {this.state.projectDetails.task_type ===
-                        TEXT_SUMMARIZATION && (
-                        <Fullscreen
-                          enabled={this.state.fullScreen}
-                          onChange={isFullscreenEnabled =>
-                            this.setState({
-                              isFullscreenEnabled,
-                              fullScreen: isFullscreenEnabled
-                            })
-                          }
-                        >
-                          <div className="marginTopExtra">
-                            {extra && <div>{this.showExtra(extra)}</div>}
-                            {this.showText()}
-                            <br />
-                            {this.showWriteText(TEXT_SUMMARIZATION)}
-                            {this.state.loading &&
-                              this.state.isFullscreenEnabled && (
-                                <Segment basic vertical loading />
-                              )}
-                            <div
-                              style={{ height: "20px" }}
-                              disabled={this.state.loading}
-                            />
-                            {this.state.type === "notDone" &&
-                              this.showButtons()}
+                        )}
+                        {nextWord && (
+                          <div className="text-left">
+                            <p>
+                              {" "}
+                              Next Word Shortcut: <b> {nextWord} </b>{" "}
+                            </p>
                           </div>
-                        </Fullscreen>
-                      )}
-                      {this.state.projectDetails.task_type ===
-                        TEXT_CLASSIFICATION && (
-                        <Fullscreen
-                          enabled={this.state.fullScreen}
-                          onChange={isFullscreenEnabled =>
-                            this.setState({
-                              isFullscreenEnabled,
-                              fullScreen: isFullscreenEnabled
-                            })
-                          }
-                        >
-                          <div
-                            className="marginTopExtra"
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between"
-                            }}
-                          >
-                            <div style={{ width: "77%" }}>
-                              {extra && <div>{this.showExtra(extra)}</div>}
-                              {this.showText()}
-                              <br />
-                              {this.state.currentIndex >= 0 && showNoteLable()}
-                            </div>
-                            <div style={{ width: "20%" }}>
-                              {this.state.loading &&
-                                this.state.isFullscreenEnabled && (
-                                  <Segment basic vertical loading />
-                                )}
-                              {this.showClassifyTags(true, "vertical")}
-                              <br />
-                              {this.state.type === "notDone" &&
-                                this.showButtons("vertical")}
-                            </div>
-                          </div>
-                        </Fullscreen>
-                      )}
-                      {this.state.projectDetails.task_type ===
-                        TEXT_MODERATION && (
-                        <Fullscreen
-                          enabled={this.state.fullScreen}
-                          onChange={isFullscreenEnabled =>
-                            this.setState({
-                              isFullscreenEnabled,
-                              fullScreen: isFullscreenEnabled
-                            })
-                          }
-                        >
-                          <div className="marginTopExtra">
-                            {extra && <div>{this.showExtra(extra)}</div>}
-                            {this.showText()}
-                            <br />
-                            {this.showWriteText(TEXT_MODERATION)}
-                            {this.state.loading &&
-                              this.state.isFullscreenEnabled && (
-                                <Segment basic vertical loading />
-                              )}
-                            <div
-                              style={{ height: "20px" }}
-                              disabled={this.state.loading}
-                            />
-                            {this.state.type === "notDone" &&
-                              this.showButtons()}
-                          </div>
-                        </Fullscreen>
-                      )}
+                        )}
+                        {extra && <div>{this.showExtra(extra)}</div>}
+                        {this.showTagLine()}
+                        <br/>
+                        <h3>Entities</h3>
+                        <br/>
+                        {this.showTags(this.state.entities)}
+                        {this.state.loading &&
+                        this.state.isFullscreenEnabled && (
+                          <Segment basic vertical loading/>
+                        )}
+                        <div
+                          style={{height: "20px"}}
+                          disabled={this.state.loading}
+                        />
+                        {this.showButtons()}
+                      </div>
+                    </Fullscreen>
+                  )}
+                  {this.state.projectDetails.task_type ===
+                  TEXT_SUMMARIZATION && (
+                    <Fullscreen
+                      enabled={this.state.fullScreen}
+                      onChange={isFullscreenEnabled =>
+                        this.setState({
+                          isFullscreenEnabled,
+                          fullScreen: isFullscreenEnabled
+                        })
+                      }
+                    >
+                      <div className="marginTopExtra">
+                        {extra && <div>{this.showExtra(extra)}</div>}
+                        {this.showText()}
+                        <br/>
+                        {this.showWriteText(TEXT_SUMMARIZATION)}
+                        {this.state.loading &&
+                        this.state.isFullscreenEnabled && (
+                          <Segment basic vertical loading/>
+                        )}
+                        <div
+                          style={{height: "20px"}}
+                          disabled={this.state.loading}
+                        />
+                        {this.state.type === "notDone" &&
+                        this.showButtons()}
+                      </div>
+                    </Fullscreen>
+                  )}
+                  {this.state.projectDetails.task_type ===
+                  TEXT_CLASSIFICATION && (
+                    <Fullscreen
+                      enabled={this.state.fullScreen}
+                      onChange={isFullscreenEnabled =>
+                        this.setState({
+                          isFullscreenEnabled,
+                          fullScreen: isFullscreenEnabled
+                        })
+                      }
+                    >
+                      <div
+                        className="marginTopExtra"
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between"
+                        }}
+                      >
+                        <div style={{width: "77%"}}>
+                          {extra && <div>{this.showExtra(extra)}</div>}
+                          {this.showText()}
+                          <br/>
+                          {this.state.currentIndex >= 0 && showNoteLable()}
+                        </div>
+                        <div style={{width: "20%"}}>
+                          {this.state.loading &&
+                          this.state.isFullscreenEnabled && (
+                            <Segment basic vertical loading/>
+                          )}
+                          {this.showClassifyTags(true, "vertical")}
+                          <br/>
+                          {this.state.type === "notDone" &&
+                          this.showButtons("vertical")}
+                        </div>
+                      </div>
+                    </Fullscreen>
+                  )}
+                  {this.state.projectDetails.task_type ===
+                  TEXT_MODERATION && (
+                    <Fullscreen
+                      enabled={this.state.fullScreen}
+                      onChange={isFullscreenEnabled =>
+                        this.setState({
+                          isFullscreenEnabled,
+                          fullScreen: isFullscreenEnabled
+                        })
+                      }
+                    >
+                      <div className="marginTopExtra">
+                        {extra && <div>{this.showExtra(extra)}</div>}
+                        {this.showText()}
+                        <br/>
+                        {this.showWriteText(TEXT_MODERATION)}
+                        {this.state.loading &&
+                        this.state.isFullscreenEnabled && (
+                          <Segment basic vertical loading/>
+                        )}
+                        <div
+                          style={{height: "20px"}}
+                          disabled={this.state.loading}
+                        />
+                        {this.state.type === "notDone" &&
+                        this.showButtons()}
+                      </div>
+                    </Fullscreen>
+                  )}
 
-                    {(this.props.projectDetails.task_type ===
-                        VIDEO_CLASSIFICATION) && (
-                        <Fullscreen
-                          enabled={false}
-                        >
+                  {(this.props.projectDetails.task_type ===
+                    VIDEO_CLASSIFICATION) && (
+                    <Fullscreen
+                      enabled={false}
+                    >
                       <div
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
                         }}
                       >
-                        <div style={{ width: '80%'}}>
+                        <div style={{width: '80%'}}>
                           {extra && <div>{this.showExtra(extra)}</div>}
                           {this.showImages()}
-                          <br />
+                          <br/>
                           {this.state.currentIndex >= 0 && showNoteLable()}
                           {this.state.loading &&
-                            this.state.isFullscreenEnabled && (
-                              <Segment basic vertical loading />
-                            )}
+                          this.state.isFullscreenEnabled && (
+                            <Segment basic vertical loading/>
+                          )}
                         </div>
-                        <div style={{ width: '20%'}}>
+                        <div style={{width: '20%'}}>
                           {this.showClassifyTags(true, "vertical")}
-                          <br />
+                          <br/>
                           {this.state.type === "notDone" &&
-                            this.showButtons("vertical")}
+                          this.showButtons("vertical")}
                         </div>
                       </div>
-                      </Fullscreen>
-                    )}
-                    {(this.props.projectDetails.task_type ===
-                      IMAGE_CLASSIFICATION) && (
-                        <Fullscreen
-                          enabled={this.state.fullScreen}
-                          onChange={isFullscreenEnabled =>
-                            this.setState({
-                              isFullscreenEnabled,
-                              fullScreen: isFullscreenEnabled
-                            })
-                          }
-                        >
+                    </Fullscreen>
+                  )}
+                  {(this.props.projectDetails.task_type ===
+                    IMAGE_CLASSIFICATION) && (
+                    <Fullscreen
+                      enabled={this.state.fullScreen}
+                      onChange={isFullscreenEnabled =>
+                        this.setState({
+                          isFullscreenEnabled,
+                          fullScreen: isFullscreenEnabled
+                        })
+                      }
+                    >
                       <div
                         style={{
                           display: "flex",
                           justifyContent: "space-between"
                         }}
                       >
-                          <div style={{ width: '77%' }}>
-                            {extra && <div>{this.showExtra(extra)}</div>}
-                            {this.showImages()}
-                            <br />
-                            {this.state.currentIndex >= 0 && showNoteLable()}
-                            {this.state.loading &&
-                              this.state.isFullscreenEnabled && (
-                                <Segment basic vertical loading />
-                              )}
-                          </div>
-                          <div style={{ width: '20%'}}>
-                            {this.showClassifyTags(true, "vertical")}
-                            <br />
-                            {this.state.type === "notDone" &&
-                              this.showButtons("vertical")}
-                          </div>
+                        <div style={{width: '77%'}}>
+                          {extra && <div>{this.showExtra(extra)}</div>}
+                          {this.showImages()}
+                          <br/>
+                          {this.state.currentIndex >= 0 && showNoteLable()}
+                          {this.state.loading &&
+                          this.state.isFullscreenEnabled && (
+                            <Segment basic vertical loading/>
+                          )}
+                        </div>
+                        <div style={{width: '20%'}}>
+                          {this.showClassifyTags(true, "vertical")}
+                          <br/>
+                          {this.state.type === "notDone" &&
+                          this.showButtons("vertical")}
+                        </div>
                       </div>
-                      </Fullscreen>
-                    )}
-                    {this.props.projectDetails.task_type ===
-                      IMAGE_BOUNDING_BOX && (
-                      <div>
-                        {extra && <div>{this.showExtra(extra)}</div>}
-                        <Fullscreen
-                          enabled={this.state.fullScreen}
-                          onChange={isFullscreenEnabled =>
-                            this.setState({
-                              isFullscreenEnabled,
-                              fullScreen: isFullscreenEnabled
-                            })
-                          }
-                        >
-                          {
-                            <div className="col-md-12">
-                              {this.showBoundingImages()}
-                            </div>
-                          }
-                        </Fullscreen>
-                      </div>
-                    )}
-
-                    {this.props.projectDetails.task_type ===
-                      IMAGE_POLYGON_BOUNDING_BOX && (
-                      <div>
-                        {extra && <div>{this.showExtra(extra)}</div>}
-                        <Fullscreen
-                          enabled={this.state.fullScreen}
-                          onChange={isFullscreenEnabled =>
-                            this.setState({
-                              isFullscreenEnabled,
-                              fullScreen: isFullscreenEnabled
-                            })
-                          }
-                        >
-                          {this.showPolygonBoundingImages()}
-                        </Fullscreen>
-                      </div>
-                    )}
-
-                    {this.props.projectDetails.task_type ===
-                      IMAGE_POLYGON_BOUNDING_BOX_V2 && (
-                      <div>
-                        {extra && <div>{this.showExtra(extra)}</div>}
-                        <Fullscreen
-                          enabled={this.state.fullScreen}
-                          onChange={isFullscreenEnabled =>
-                            this.setState({
-                              isFullscreenEnabled,
-                              fullScreen: isFullscreenEnabled
-                            })
-                          }
-                        >
-                          {this.showPolygonV2BoundingImages()}
-                        </Fullscreen>
-                      </div>
-                    )}
-
-                    {this.props.projectDetails.task_type ===
-                      VIDEO_BOUNDING_BOX && (
-                      <div>
-                        {extra && <div>{this.showExtra(extra)}</div>}
-                        {this.showVideoAnnotation()}
-                      </div>
-                    )}
-
-                    {(this.props.projectDetails.task_type ===
-                      DOCUMENT_ANNOTATION ||
-                      this.props.projectDetails.task_type ===
-                        POS_TAGGING_GENERIC) && (
+                    </Fullscreen>
+                  )}
+                  {this.props.projectDetails.task_type ===
+                  IMAGE_BOUNDING_BOX && (
+                    <div>
+                      {extra && <div>{this.showExtra(extra)}</div>}
                       <Fullscreen
                         enabled={this.state.fullScreen}
                         onChange={isFullscreenEnabled =>
@@ -4405,54 +4388,120 @@ export default class TaggerSpace extends Component {
                           })
                         }
                       >
-                        <div>
-                          {extra && <div>{this.showExtra(extra)}</div>}
-                          <br />
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "row",
-                              justifyContent: "center"
-                            }}
-                          >
-                            {this.state.classification && (
-                              <div style={{ width: "15%", margin: "0.5em" }}>
-                                {this.state.classification && (
-                                  <div>
-                                    <h3> Choose all that apply </h3>
-                                    <Segment
-                                      raised
-                                      basic
-                                      vertical
-                                      style={{
-                                        backgroundColor: "#e1e1e1",
-                                        padding: "0.5em"
-                                      }}
-                                    >
-                                      {this.getClassificationQuestions()}
-                                    </Segment>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            <div style={{ margin: "0.5em", width: "100%" }}>
-                              {this.showDocumentAnnotation()}
-                            </div>
+                        {
+                          <div className="col-md-12">
+                            {this.showBoundingImages()}
                           </div>
-                          {this.state.loading &&
-                            this.state.isFullscreenEnabled && (
-                              <Segment basic vertical loading />
-                            )}
-                          <div
-                            style={{ height: "20px" }}
-                            disabled={this.state.loading}
-                          />
-                        </div>
+                        }
                       </Fullscreen>
-                    )}
-                    <br />
-                  </div>
-                )}
+                    </div>
+                  )}
+
+                  {this.props.projectDetails.task_type ===
+                  IMAGE_POLYGON_BOUNDING_BOX && (
+                    <div>
+                      {extra && <div>{this.showExtra(extra)}</div>}
+                      <Fullscreen
+                        enabled={this.state.fullScreen}
+                        onChange={isFullscreenEnabled =>
+                          this.setState({
+                            isFullscreenEnabled,
+                            fullScreen: isFullscreenEnabled
+                          })
+                        }
+                      >
+                        {this.showPolygonBoundingImages()}
+                      </Fullscreen>
+                    </div>
+                  )}
+
+                  {this.props.projectDetails.task_type ===
+                  IMAGE_POLYGON_BOUNDING_BOX_V2 && (
+                    <div>
+                      {extra && <div>{this.showExtra(extra)}</div>}
+                      <Fullscreen
+                        enabled={this.state.fullScreen}
+                        onChange={isFullscreenEnabled =>
+                          this.setState({
+                            isFullscreenEnabled,
+                            fullScreen: isFullscreenEnabled
+                          })
+                        }
+                      >
+                        {this.showPolygonV2BoundingImages()}
+                      </Fullscreen>
+                    </div>
+                  )}
+
+                  {this.props.projectDetails.task_type ===
+                  VIDEO_BOUNDING_BOX && (
+                    <div>
+                      {extra && <div>{this.showExtra(extra)}</div>}
+                      {this.showVideoAnnotation()}
+                    </div>
+                  )}
+
+                  {(this.props.projectDetails.task_type ===
+                    DOCUMENT_ANNOTATION ||
+                    this.props.projectDetails.task_type ===
+                    POS_TAGGING_GENERIC) && (
+                    <Fullscreen
+                      enabled={this.state.fullScreen}
+                      onChange={isFullscreenEnabled =>
+                        this.setState({
+                          isFullscreenEnabled,
+                          fullScreen: isFullscreenEnabled
+                        })
+                      }
+                    >
+                      <div>
+                        {extra && <div>{this.showExtra(extra)}</div>}
+                        <br/>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "center"
+                          }}
+                        >
+                          {this.state.classification && (
+                            <div style={{width: "15%", margin: "0.5em"}}>
+                              {this.state.classification && (
+                                <div>
+                                  <h3> Choose all that apply </h3>
+                                  <Segment
+                                    raised
+                                    basic
+                                    vertical
+                                    style={{
+                                      backgroundColor: "#e1e1e1",
+                                      padding: "0.5em"
+                                    }}
+                                  >
+                                    {this.getClassificationQuestions()}
+                                  </Segment>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <div style={{margin: "0.5em", width: "100%"}}>
+                            {this.showDocumentAnnotation()}
+                          </div>
+                        </div>
+                        {this.state.loading &&
+                        this.state.isFullscreenEnabled && (
+                          <Segment basic vertical loading/>
+                        )}
+                        <div
+                          style={{height: "20px"}}
+                          disabled={this.state.loading}
+                        />
+                      </div>
+                    </Fullscreen>
+                  )}
+                  <br/>
+                </div>
+              )}
             </div>
           </div>
         )}

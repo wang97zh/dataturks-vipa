@@ -4,7 +4,6 @@ import bonsai.config.AppConfig;
 import bonsai.config.DBBasedConfigs;
 
 import bonsai.dropwizard.dao.d.*;
-import bonsai.dropwizard.resources.DataturksEndpoint;
 import dataturks.aws.S3Handler;
 import dataturks.cache.CacheWrapper;
 import dataturks.license.LicenseHandler;
@@ -275,10 +274,26 @@ public class DUtils {
     public static boolean isValidHitStatus(String status) {
         if (DConstants.HIT_STATUS_SKIPPED.equalsIgnoreCase(status) ||
                 DConstants.HIT_STATUS_DONE.equalsIgnoreCase(status) ||
+            DConstants.HIT_STATUS_SELF_LEARNING.equalsIgnoreCase(status) ||
+            DConstants.HIT_STATUS_ACTIVE_LEARNING.equalsIgnoreCase(status) ||
                 DConstants.HIT_STATUS_NOT_DONE.equalsIgnoreCase(status) ||
                 DConstants.HIT_STATUS_DELETED.equalsIgnoreCase(status) ||
                 DConstants.HIT_STATUS_PRE_TAGGED.equalsIgnoreCase(status) ||
                 DConstants.HIT_STATUS_REQUEUED.equalsIgnoreCase(status) ) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * 已标注的状态,新增HIT_STATUS_SELF_LEARNING,HIT_STATUS_ACTIVE_LEARNING
+     * @param:
+     * @return:
+     */
+    public static boolean isHittedStatus(String status) {
+        if (DConstants.HIT_STATUS_DONE.equalsIgnoreCase(status) ||
+            DConstants.HIT_STATUS_SELF_LEARNING.equalsIgnoreCase(status) ||
+            DConstants.HIT_STATUS_ACTIVE_LEARNING.equalsIgnoreCase(status)
+             ) {
             return true;
         }
         return false;
@@ -289,7 +304,7 @@ public class DUtils {
         if (user == null) {
             user = AppConfig.getInstance().getdUsersDAO().findByIdInternal(uid);
             if (user != null) {
-                CacheWrapper.addUser(uid, user);
+                    CacheWrapper.addUser(uid, user);
             }
         }
         return user;

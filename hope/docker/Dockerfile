@@ -109,7 +109,6 @@ EXPOSE 3000
 EXPOSE 3001
 EXPOSE 80
 
-
 COPY $LOCAL_HOPE_DIR/target/dataturks-1.0-SNAPSHOT.jar $BASE_DIR/dataturks-1.0-SNAPSHOT.jar
 COPY $LOCAL_HOPE_DIR/onprem.yml $BASE_DIR/onprem.yml
 
